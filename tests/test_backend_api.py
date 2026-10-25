@@ -23,6 +23,19 @@ def test_health_check():
     assert response.json()["status"] == "ok"
 
 
+def test_render_login_page():
+    response = client.get("/login")
+    assert response.status_code == 200
+    assert "Martabak Core" in response.text
+    assert "Sign In" in response.text
+
+
+def test_render_dashboard_unauthenticated_redirect():
+    response = client.get("/dashboard", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
+
+
 def test_auth_workflow():
     # Register
     reg_payload = {

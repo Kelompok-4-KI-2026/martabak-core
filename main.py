@@ -30,6 +30,14 @@ app = FastAPI(
 
 templates = Jinja2Templates(directory="templates")
 
+
+def get_flashed_messages(with_categories: bool = False):
+    return []
+
+
+# Enable get_flashed_messages for Jinja2 templates
+templates.env.globals["get_flashed_messages"] = get_flashed_messages
+
 # Mount API routers
 app.include_router(auth_router.router)
 app.include_router(vault_router.router)
@@ -53,6 +61,7 @@ def get_optional_user(request: Request, db: Session) -> Optional[User]:
 
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/dashboard", response_class=HTMLResponse)
 def index(request: Request, db: Session = Depends(get_db)):
     user = get_optional_user(request, db)
     if not user:
@@ -66,9 +75,9 @@ def index(request: Request, db: Session = Depends(get_db)):
     )
 
     return templates.TemplateResponse(
-        "dashboard.html",
-        {
-            "request": request,
+        request=request,
+        name="dashboard.html",
+        context={
             "user": user,
             "files": files,
         },
@@ -82,9 +91,9 @@ def login_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/", status_code=303)
 
     return templates.TemplateResponse(
-        "login.html",
-        {
-            "request": request,
+        request=request,
+        name="login.html",
+        context={
             "error": request.query_params.get("error"),
         },
     )
