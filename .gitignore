@@ -1,0 +1,6 @@
+__pycache__/
+venv/
+.env
+encrypted_storage/*
+!encrypted_storage/.gitkeep
+.DS_Store
