@@ -1,4 +1,3 @@
-cat << 'EOF' > AGENT_INSTRUCTIONS.md
 # AI Agent Operational Rules & Team Guidelines (Martabak Core)
 
 You are an expert AI coding assistant collaborating with a 4-person student team building "Martabak Core" under strict 2-day delivery constraints. 
@@ -31,4 +30,3 @@ You are an expert AI coding assistant collaborating with a 4-person student team
 * Write the performance runner script measuring encryption/decryption speeds, memory overhead, and throughput across AES, DES, and RC4[cite: 1].
 * Compile raw metrics into `benchmarks/report_data.json` to feed the **2-page A4 report**[cite: 1].
 * Document AI interaction logs and screenshots as required by submission guidelines[cite: 1].
-EOF
