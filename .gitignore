@@ -7,3 +7,4 @@ encrypted_storage/*
 keys/
 !keys/.gitkeep
 .DS_Store
+*.db

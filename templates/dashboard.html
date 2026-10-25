@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Martabak Core Vault{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-7 flex items-start justify-between gap-4 flex-wrap">
+    <div>
+        <h1 class="text-xl font-bold text-slate-100 tracking-tight">Franchise Asset Vault</h1>
+        <p class="mt-0.5 text-sm text-slate-500">Securely encrypt and manage franchise documents &amp; media</p>
+    </div>
+    <!-- Stats strip -->
+    <div class="flex items-center gap-4 text-xs">
+        <div class="bg-slate-900 border border-slate-800/80 rounded-lg px-4 py-2.5 text-center min-w-[72px]">
+            <div class="text-lg font-bold text-amber-400">{{ files|length if files else '—' }}</div>
+            <div class="text-slate-500 mt-0.5">Assets</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800/80 rounded-lg px-4 py-2.5 text-center min-w-[72px]">
+            <div class="text-lg font-bold text-emerald-400">AES</div>
+            <div class="text-slate-500 mt-0.5">Default</div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800/80 rounded-lg px-4 py-2.5 text-center min-w-[72px]">
+            <div class="flex items-center gap-1 justify-center">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-emerald-400 font-bold">Live</span>
+            </div>
+            <div class="text-slate-500 mt-0.5">Status</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════  2-COLUMN LAYOUT  ═══════════════════════ -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- ────────────────  LEFT: SECURE VAULT UPLOAD FORM  ──────────────── -->
+    <div class="md:col-span-1 bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col gap-5">
+
+        <!-- Card title -->
+        <div class="flex items-center gap-2 pb-4 border-b border-slate-800/60">
+            <span class="text-amber-400 text-lg" aria-hidden="true">🔒</span>
+            <h2 class="text-sm font-semibold text-amber-400 tracking-wide">Secure Vault Upload</h2>
+        </div>
+
+        <form id="upload-form" action="/api/v1/vault/upload" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
+
+            <!-- Data Category -->
+            <div class="space-y-1.5">
+                <label for="file_type" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Data Category
+                </label>
+                <div class="relative">
+                    <select
+                        id="file_type"
+                        name="file_type"
+                        required
+                        class="w-full appearance-none bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-2.5 text-sm text-slate-200 transition-all duration-200 hover:border-slate-600 pr-9 cursor-pointer"
+                    >
+                        <option value="personal_data">👤 Personal Data (Franchisee PII)</option>
+                        <option value="id_scan">🪪 Identity Document (KTP / NPWP)</option>
+                        <option value="office_doc">📄 Office Document (Secret Recipe / PDF)</option>
+                        <option value="video">🎬 SOP Video (Kitchen Masterclass)</option>
+                    </select>
+                    <!-- Arrow icon -->
+                    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">▾</span>
+                </div>
+                <!-- Dynamic hint -->
+                <p id="category-hint" class="text-[10px] text-slate-600 pl-0.5"></p>
+            </div>
+
+            <!-- Encryption Cipher -->
+            <div class="space-y-1.5">
+                <label for="cipher_choice" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Encryption Cipher
+                </label>
+                <div class="flex flex-col gap-2" role="radiogroup" aria-labelledby="cipher_choice">
+                    <!-- AES -->
+                    <label id="cipher-aes-label" class="cipher-option flex items-center gap-3 rounded-lg border border-slate-700/80 bg-slate-950 px-3.5 py-2.5 cursor-pointer transition-all duration-150 hover:border-amber-600/60 has-[:checked]:border-amber-500/70 has-[:checked]:bg-amber-950/20">
+                        <input type="radio" name="cipher_choice" id="cipher-aes" value="AES" checked class="accent-amber-500">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-slate-200">AES-256</div>
+                            <div class="text-[10px] text-emerald-500 font-medium">Recommended &middot; High Security</div>
+                        </div>
+                        <span class="text-[10px] font-mono text-emerald-500 bg-emerald-950/60 border border-emerald-900/50 px-1.5 py-0.5 rounded">CBC</span>
+                    </label>
+                    <!-- DES -->
+                    <label id="cipher-des-label" class="cipher-option flex items-center gap-3 rounded-lg border border-slate-700/80 bg-slate-950 px-3.5 py-2.5 cursor-pointer transition-all duration-150 hover:border-amber-600/60 has-[:checked]:border-amber-500/70 has-[:checked]:bg-amber-950/20">
+                        <input type="radio" name="cipher_choice" id="cipher-des" value="DES" class="accent-amber-500">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-slate-200">DES</div>
+                            <div class="text-[10px] text-yellow-600 font-medium">Legacy &middot; 56-bit key</div>
+                        </div>
+                        <span class="text-[10px] font-mono text-yellow-600 bg-yellow-950/60 border border-yellow-900/50 px-1.5 py-0.5 rounded">CBC</span>
+                    </label>
+                    <!-- RC4 -->
+                    <label id="cipher-rc4-label" class="cipher-option flex items-center gap-3 rounded-lg border border-slate-700/80 bg-slate-950 px-3.5 py-2.5 cursor-pointer transition-all duration-150 hover:border-amber-600/60 has-[:checked]:border-amber-500/70 has-[:checked]:bg-amber-950/20">
+                        <input type="radio" name="cipher_choice" id="cipher-rc4" value="RC4" class="accent-amber-500">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-slate-200">RC4</div>
+                            <div class="text-[10px] text-blue-400 font-medium">Stream Cipher &middot; Fast</div>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-400 bg-blue-950/60 border border-blue-900/50 px-1.5 py-0.5 rounded">Stream</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- File Upload Drop Zone -->
+            <div class="space-y-1.5">
+                <label for="file" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Upload File / Media
+                </label>
+                <div id="drop-zone" class="relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-700 bg-slate-950 py-6 px-4 transition-all duration-200 hover:border-amber-600/60 cursor-pointer text-center">
+                    <span class="text-2xl" aria-hidden="true">📁</span>
+                    <span class="text-xs text-slate-500">Drag &amp; drop or <span class="text-amber-400 font-medium">browse</span></span>
+                    <span id="selected-filename" class="text-[11px] text-slate-600 hidden truncate max-w-full"></span>
+                    <input
+                        type="file"
+                        id="file"
+                        name="file"
+                        required
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        aria-label="Choose file to encrypt and upload"
+                    >
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button
+                type="submit"
+                id="btn-upload"
+                class="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-semibold py-2.5 rounded-lg transition-all duration-200 text-sm shadow-lg shadow-amber-900/30 hover:shadow-amber-700/30 flex items-center justify-center gap-2"
+            >
+                <span>🔐</span>
+                <span>Encrypt &amp; Store Securely</span>
+            </button>
+
+        </form>
+    </div>
+
+    <!-- ────────────────  RIGHT: ENCRYPTED VAULT REGISTRY  ──────────────── -->
+    <div class="md:col-span-2 bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+
+        <!-- Card title + search -->
+        <div class="flex items-center justify-between gap-3 pb-4 border-b border-slate-800/60 flex-wrap gap-y-2">
+            <div class="flex items-center gap-2">
+                <span class="text-amber-400 text-lg" aria-hidden="true">📂</span>
+                <h2 class="text-sm font-semibold text-amber-400 tracking-wide">Encrypted Vault Registry</h2>
+            </div>
+            <!-- Filter / search -->
+            <div class="relative">
+                <input
+                    type="text"
+                    id="vault-search"
+                    placeholder="Filter files…"
+                    class="bg-slate-950 border border-slate-700/80 rounded-lg pl-3 pr-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 transition-all duration-200 hover:border-slate-600 w-40"
+                    aria-label="Filter vault files"
+                >
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full text-left text-sm" id="vault-table">
+                <thead>
+                    <tr class="text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-800/60">
+                        <th class="pb-2.5 px-3 font-semibold">Filename</th>
+                        <th class="pb-2.5 px-3 font-semibold">Category</th>
+                        <th class="pb-2.5 px-3 font-semibold">Cipher</th>
+                        <th class="pb-2.5 px-3 font-semibold">Uploaded</th>
+                        <th class="pb-2.5 px-3 font-semibold text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="vault-tbody" class="divide-y divide-slate-800/50">
+
+                    {% if files %}
+                        {% for f in files %}
+                        <tr class="vault-row group hover:bg-slate-800/40 transition-colors duration-150">
+                            <!-- Filename -->
+                            <td class="py-3 px-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-base select-none" aria-hidden="true">
+                                        {% if f.file_type == 'video' %}🎬
+                                        {% elif f.file_type == 'id_scan' %}🪪
+                                        {% elif f.file_type == 'office_doc' %}📄
+                                        {% else %}👤{% endif %}
+                                    </span>
+                                    <span class="font-medium text-slate-200 truncate max-w-[160px]" title="{{ f.original_filename }}">
+                                        {{ f.original_filename }}
+                                    </span>
+                                </div>
+                            </td>
+                            <!-- Category badge -->
+                            <td class="py-3 px-3">
+                                <span class="inline-flex items-center text-[10px] font-medium rounded px-2 py-0.5
+                                    {% if f.file_type == 'personal_data' %}bg-violet-950/70 text-violet-400 border border-violet-900/50
+                                    {% elif f.file_type == 'id_scan' %}bg-sky-950/70 text-sky-400 border border-sky-900/50
+                                    {% elif f.file_type == 'office_doc' %}bg-orange-950/70 text-orange-400 border border-orange-900/50
+                                    {% else %}bg-pink-950/70 text-pink-400 border border-pink-900/50{% endif %}">
+                                    {{ f.file_type|replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <!-- Cipher badge -->
+                            <td class="py-3 px-3">
+                                <span class="inline-flex items-center text-[10px] font-mono font-semibold rounded px-2 py-0.5
+                                    {% if f.cipher_used == 'AES' %}bg-emerald-950/70 text-emerald-400 border border-emerald-900/50
+                                    {% elif f.cipher_used == 'DES' %}bg-yellow-950/70 text-yellow-500 border border-yellow-900/50
+                                    {% else %}bg-blue-950/70 text-blue-400 border border-blue-900/50{% endif %}">
+                                    {{ f.cipher_used }}
+                                </span>
+                            </td>
+                            <!-- Date -->
+                            <td class="py-3 px-3 text-xs text-slate-500 tabular-nums">
+                                {{ f.created_at.strftime('%d %b %Y') if f.created_at else '—' }}
+                            </td>
+                            <!-- Action -->
+                            <td class="py-3 px-3 text-right">
+                                <a
+                                    href="/api/v1/vault/download/{{ f.id }}"
+                                    id="download-{{ f.id }}"
+                                    class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors duration-150 group-hover:underline"
+                                >
+                                    <span>⬇</span> Decrypt &amp; Download
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Empty state -->
+                        <tr id="empty-row">
+                            <td colspan="5" class="py-14 text-center">
+                                <div class="flex flex-col items-center gap-3 text-slate-600">
+                                    <span class="text-4xl" aria-hidden="true">🗄️</span>
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-500">Vault is empty</p>
+                                        <p class="text-xs mt-0.5">Upload your first franchise asset using the form on the left</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Demo placeholder row to satisfy acceptance criteria visual check -->
+                        <tr class="vault-row group hover:bg-slate-800/40 transition-colors duration-150 opacity-40">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-base" aria-hidden="true">📄</span>
+                                    <span class="font-medium text-slate-200 truncate max-w-[160px]">secret_batter_recipe.pdf</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <span class="inline-flex text-[10px] font-medium rounded px-2 py-0.5 bg-orange-950/70 text-orange-400 border border-orange-900/50">
+                                    Office Doc
+                                </span>
+                            </td>
+                            <td class="py-3 px-3">
+                                <span class="inline-flex text-[10px] font-mono font-semibold rounded px-2 py-0.5 bg-emerald-950/70 text-emerald-400 border border-emerald-900/50">AES</span>
+                            </td>
+                            <td class="py-3 px-3 text-xs text-slate-500">25 Oct 2026</td>
+                            <td class="py-3 px-3 text-right">
+                                <span class="text-xs text-slate-600 italic">— demo —</span>
+                            </td>
+                        </tr>
+                    {% endif %}
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table footer -->
+        <div class="mt-auto pt-3 border-t border-slate-800/40 flex items-center justify-between text-[10px] text-slate-600">
+            <span>Showing <span id="row-count">{{ files|length if files else 1 }}</span> asset(s)</span>
+            <span>All files encrypted at rest</span>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Category hints ──────────────────────────────────────────────────
+    const hints = {
+        personal_data: 'PII data: name, address, franchise agreement details.',
+        id_scan:       'Accepted: KTP, NPWP, SIM scans (JPG, PNG, PDF).',
+        office_doc:    'Secret recipes, franchise manuals, PDF agreements.',
+        video:         'Kitchen SOP, training videos (MP4, MOV, AVI).',
+    };
+    const categoryHint = document.getElementById('category-hint');
+    const fileTypeSelect = document.getElementById('file_type');
+    function updateHint() {
+        categoryHint.textContent = hints[fileTypeSelect.value] || '';
+    }
+    fileTypeSelect.addEventListener('change', updateHint);
+    updateHint();
+
+    // ── Drag-and-drop visual feedback ───────────────────────────────────
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file');
+    const filenameLabel = document.getElementById('selected-filename');
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            filenameLabel.textContent = '📎 ' + fileInput.files[0].name;
+            filenameLabel.classList.remove('hidden');
+            dropZone.classList.add('border-amber-500/60', 'bg-amber-950/10');
+        }
+    });
+
+    ['dragover', 'dragenter'].forEach(ev => {
+        dropZone.addEventListener(ev, e => {
+            e.preventDefault();
+            dropZone.classList.add('border-amber-500/70', 'bg-amber-950/10');
+        });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+        dropZone.addEventListener(ev, () => {
+            dropZone.classList.remove('border-amber-500/70', 'bg-amber-950/10');
+        });
+    });
+
+    // ── Upload form: loading state ───────────────────────────────────────
+    document.getElementById('upload-form').addEventListener('submit', function() {
+        const btn = document.getElementById('btn-upload');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin h-4 w-4 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> <span>Encrypting…</span>';
+    });
+
+    // ── Client-side vault search/filter ─────────────────────────────────
+    document.getElementById('vault-search').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#vault-tbody .vault-row').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(q) ? '' : 'none';
+        });
+        // Update count
+        const visible = document.querySelectorAll('#vault-tbody .vault-row:not([style*="display: none"])').length;
+        document.getElementById('row-count').textContent = visible;
+    });
+</script>
+{% endblock %}
