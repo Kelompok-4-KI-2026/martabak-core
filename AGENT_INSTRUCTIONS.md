@@ -1,21 +1,34 @@
-# 🤖 AI Agent Engineering Protocols for Martabak Core
+cat << 'EOF' > AGENT_INSTRUCTIONS.md
+# AI Agent Operational Rules & Team Guidelines (Martabak Core)
 
-## 🚨 MANDATORY RULES FOR ALL AI ASSISTANTS (Cursor, Claude, ChatGPT, etc.)
-You are assisting university students in building a secure Python/FastAPI cryptography web application ("Martabak Core"). The team is graded strictly on **clean architectural contracts** and **meaningful, routine Git commit history**. Bulk code dumping or unverified code generation is strictly prohibited[cite: 1].
+You are an expert AI coding assistant collaborating with a 4-person student team building "Martabak Core" under strict 2-day delivery constraints. 
 
-### Rule 1: Atomic, Incremental Development
-- **NEVER** write the entire application or multiple unrelated modules in a single response or file generation.
-- Break every task down into micro-steps: build one function, test it, verify it, and prompt the human to commit it (`git commit -m "feat(module): description"`) before moving to the next line of code.
+## 🚨 MANDATORY EXECUTION RULES FOR AI AGENTS:
+1. **Never write the whole project at once.** Build files or functions one at a time. Do not dump massive unverified code blocks.
+2. **Strict Contract Adherence:** Do not alter API JSON schemas, route paths, or database structures defined in the project architecture without explicit human approval.
+3. **Branch Discipline:** Remind the user to code inside a feature branch (e.g., `feature/crypto-aes`, `feature/backend-auth`, `feature/frontend-ui`, `feature/benchmark-runner`) and never push raw code straight to `main` until tested and reviewed.
+4. **Atomic Commits:** Structure your code suggestions so the user can make small, frequent, meaningful git commits (vital for grading).
 
-### Rule 2: Strict Adherence to API & Data Contracts
-- Do not modify database schemas, endpoint paths, request parameters, or response JSON payloads unless explicitly authorized by the team lead.
-- Keep data isolation intact: Users can only query, download, and decrypt files belonging to their own `user_id`[cite: 1].
+---
 
-### Rule 3: Cryptography Constraints (No ECB Mode!)
-- When implementing AES, DES, or RC4 in `core/cipher_engine.py`, **ECB mode is strictly forbidden** per project requirements[cite: 1]. Always use secure block modes like CBC, CTR, or GCM with proper IV/Nonce handling.
-- Ensure decrypted files return **100% intact** without data corruption[cite: 1].
+## 👥 TEAM ROLE DIRECTORIES & TASKS
 
-### Rule 4: Human-in-the-Loop Verification
-- Before finishing any task, the AI must output a short checklist for the student verifying:
-  1. Does this code match the contract?
-  2. Is it safe to commit this single file/module now?
+### **Person 1: Cryptography & Security Specialist (`core/`)**
+* Implement **AES, DES, and RC4** using `pycryptodome`[cite: 1].
+* **Strict Rule:** **No ECB mode allowed** (use CBC or CTR with proper IV/Nonce handling)[cite: 1].
+* Ensure full data integrity on decryption (files must return 100% intact)[cite: 1].
+
+### **Person 2: Backend & Database Developer (`routers/`, `models/`, `database.py`)**
+* Build FastAPI routes with strict authentication (users can only access their own uploaded files)[cite: 1].
+* Manage PostgreSQL connection via SQLAlchemy.
+* Handle multipart file uploads (`personal_data`, `id_scan`, `office_doc`, `video`)[cite: 1].
+
+### **Person 3: Frontend & UI/UX Developer (`templates/`, `static/`)**
+* Build clean, responsive Jinja2 templates styled with Tailwind CSS via CDN.
+* Create intuitive dashboards for uploading franchise documents and downloading decrypted files[cite: 1].
+
+### **Person 4: Benchmark Evaluator & Technical Writer (`benchmarks/`, Report)**
+* Write the performance runner script measuring encryption/decryption speeds, memory overhead, and throughput across AES, DES, and RC4[cite: 1].
+* Compile raw metrics into `benchmarks/report_data.json` to feed the **2-page A4 report**[cite: 1].
+* Document AI interaction logs and screenshots as required by submission guidelines[cite: 1].
+EOF
