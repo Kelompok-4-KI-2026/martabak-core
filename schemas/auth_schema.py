@@ -7,6 +7,8 @@ class UserRegister(BaseModel):
     username: str
     email: Optional[str] = None
     password: str
+    full_name: Optional[str] = None
+    outlet_name: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -18,6 +20,8 @@ class UserOut(BaseModel):
     id: int
     username: str
     email: Optional[str] = None
+    full_name: Optional[str] = None
+    outlet_name: Optional[str] = None
     created_at: datetime
 
     class Config:

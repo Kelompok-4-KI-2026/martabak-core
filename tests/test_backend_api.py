@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from database import Base, engine
+from database import Base, engine, init_db
 from main import app
 
 client = TestClient(app)
@@ -13,7 +13,7 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_database():
-    Base.metadata.create_all(bind=engine)
+    init_db()
     yield
 
 
@@ -154,3 +154,44 @@ def test_strict_user_isolation():
     res_b_list = client.get("/api/v1/vault/files", headers={"Authorization": f"Bearer {token_b}"})
     assert res_b_list.status_code == 200
     assert all(f["id"] != file_id_a for f in res_b_list.json())
+
+
+def test_signup_page_and_form_flow():
+    # Clear session cookie to simulate unauthenticated visitor
+    client.cookies.clear()
+
+    # Test GET /signup renders page
+    res_get = client.get("/signup")
+    assert res_get.status_code == 200
+    assert "Daftar Akun Baru" in res_get.text
+
+    # Test POST /signup password mismatch
+    res_mismatch = client.post(
+        "/signup",
+        data={
+            "username": "outlet_baru",
+            "email": "baru@martabak.id",
+            "password": "Password123!",
+            "confirm_password": "MismatchPassword!",
+        },
+        follow_redirects=False,
+    )
+    assert res_mismatch.status_code == 303
+    assert "error=" in res_mismatch.headers["location"]
+
+    # Test POST /signup successful
+    res_success = client.post(
+        "/signup",
+        data={
+            "username": "outlet_sukses",
+            "email": "sukses@martabak.id",
+            "password": "PasswordSukses123!",
+            "confirm_password": "PasswordSukses123!",
+            "full_name": "Pak Budi",
+            "outlet_name": "Martabak Sukses",
+        },
+        follow_redirects=False,
+    )
+    assert res_success.status_code == 303
+    assert res_success.headers["location"] == "/"
+    assert "session_token" in res_success.cookies

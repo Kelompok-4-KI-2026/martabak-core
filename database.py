@@ -17,3 +17,20 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
+    if DATABASE_URL.startswith("sqlite"):
+        with engine.connect() as conn:
+            try:
+                from sqlalchemy import text
+                res = conn.execute(text("PRAGMA table_info(users)"))
+                cols = [row[1] for row in res.fetchall()]
+                if cols and "full_name" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN full_name VARCHAR(150)"))
+                if cols and "outlet_name" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN outlet_name VARCHAR(150)"))
+                conn.commit()
+            except Exception:
+                pass

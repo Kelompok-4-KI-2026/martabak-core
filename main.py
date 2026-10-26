@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from core.auth_security import decode_signed_token, get_current_user
-from database import Base, engine, get_db
+from database import Base, engine, get_db, init_db
 from models.user import User
 from models.vault_file import VaultFile
 from routers import auth_router, vault_router
@@ -16,8 +16,8 @@ from routers import auth_router, vault_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure database schema is created
-    Base.metadata.create_all(bind=engine)
+    # Ensure database schema is created and migrated
+    init_db()
     yield
 
 
@@ -93,6 +93,21 @@ def login_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(
         request=request,
         name="login.html",
+        context={
+            "error": request.query_params.get("error"),
+        },
+    )
+
+
+@app.get("/signup", response_class=HTMLResponse)
+def signup_page(request: Request, db: Session = Depends(get_db)):
+    user = get_optional_user(request, db)
+    if user:
+        return RedirectResponse(url="/", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="signup.html",
         context={
             "error": request.query_params.get("error"),
         },

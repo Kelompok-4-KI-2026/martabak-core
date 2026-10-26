@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Daftar Outlet | Martabak Core Vault{% endblock %}
+
+{% block content %}
+<div class="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-[calc(100vh-88px)]">
+
+    <!-- ═══  LEFT HALF: BRAND & ONBOARDING STATEMENT  ═══ -->
+    <div class="hidden md:flex md:col-span-6 lg:col-span-7 ink-panel p-10 lg:p-16 flex-col justify-between border-r border-ink-2">
+        <div class="stagger-in">
+            <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.05em; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 1rem;">
+                Registrasi Node Outlet Baru
+            </div>
+            <h1 style="font-family: 'Young Serif', Georgia, serif; font-size: clamp(2.3rem, 4.2vw, 3.8rem); line-height: 1.08; letter-spacing: -0.02em; color: var(--ink-primary); max-width: 19ch;">
+                Buka brankas digital untuk <em>cabang outlet</em> Anda.
+            </h1>
+
+            <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 15px; line-height: 1.65; color: var(--ink-muted); max-width: 58ch; margin-top: 1.5rem;">
+                Setiap outlet mendapatkan kunci independen dan ruang penyimpanan terisolasi. Dokumen rahasia formula, SOP video, dan data mitra hanya dapat didekripsi oleh pemegang kredensial sah.
+            </p>
+        </div>
+
+        <!-- Spesifikasi teknis akun & keamanan -->
+        <div style="border-top: 1px solid var(--ink-2); padding-top: 1.5rem; margin-top: 2rem;">
+            <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-muted); margin-bottom: 0.85rem;">Prinsip keamanan akun:</p>
+            <table style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; border-collapse: collapse; width: 100%;">
+                <tr>
+                    <td style="color: var(--ink-primary); padding: 0.35rem 1.25rem 0.35rem 0; white-space: nowrap;">PBKDF2 / Argon2</td>
+                    <td style="color: var(--ink-muted); font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px;">Hashing passphrase dengan salt kriptografis</td>
+                </tr>
+                <tr>
+                    <td style="color: var(--ink-primary); padding: 0.35rem 1.25rem 0.35rem 0; white-space: nowrap;">Isolasi Tenant</td>
+                    <td style="color: var(--ink-muted); font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px;">File terenkripsi per akun, tidak dapat dibaca outlet lain</td>
+                </tr>
+                <tr>
+                    <td style="color: var(--ink-primary); padding: 0.35rem 1.25rem 0.35rem 0; white-space: nowrap;">Zero Plaintext</td>
+                    <td style="color: var(--ink-muted); font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px;">File disimpan dalam bentuk biner terenkripsi (.enc)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══  RIGHT HALF: FORM PENDAFTARAN DI ATAS KERTAS  ═══ -->
+    <div class="col-span-12 md:col-span-6 lg:col-span-5 paper p-8 sm:p-12 lg:p-14 flex flex-col justify-center">
+        <div class="max-w-md w-full mx-auto stagger-in">
+
+            <div style="margin-bottom: 1.75rem;">
+                <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.01em; color: var(--paper-primary);">Daftar Akun Baru</h2>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--paper-muted); margin-top: 0.35rem;">
+                    Lengkapi profil untuk mengaktifkan vault dokumen kemitraan.
+                </p>
+            </div>
+
+            {% if error %}
+            <div class="inline-err show" style="margin-bottom: 1rem; padding: 0.6rem 0.85rem; background: #fdf2f2; border: 1px solid var(--err-paper); border-radius: 2px;">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form id="signup-form" action="/signup" method="POST" class="space-y-4" novalidate>
+
+                <!-- Grid Nama Lengkap & Nama Outlet -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="full_name" class="field-label">Nama Pengelola</label>
+                        <input
+                            type="text"
+                            id="full_name"
+                            name="full_name"
+                            autocomplete="name"
+                            placeholder="Budi Santoso"
+                            class="input-line"
+                        >
+                    </div>
+                    <div>
+                        <label for="outlet_name" class="field-label">Nama Outlet</label>
+                        <input
+                            type="text"
+                            id="outlet_name"
+                            name="outlet_name"
+                            placeholder="Cabang Tebet 01"
+                            class="input-line"
+                        >
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label for="username" class="field-label">Username Outlet <span style="color: var(--err-paper);">*</span></label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        autocomplete="username"
+                        placeholder="outlet_tebet"
+                        required
+                        class="input-line"
+                    >
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="field-label">Email Resmi <span style="color: var(--err-paper);">*</span></label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        autocomplete="email"
+                        placeholder="tebet@martabak.id"
+                        required
+                        class="input-line"
+                    >
+                </div>
+
+                <!-- Passphrase -->
+                <div>
+                    <label for="password" class="field-label">Passphrase Vault <span style="color: var(--err-paper);">*</span></label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            autocomplete="new-password"
+                            placeholder="Minimal 8 karakter unik"
+                            required
+                            class="input-line pr-10"
+                        >
+                        <button
+                            type="button"
+                            aria-label="Tampilkan atau sembunyikan passphrase"
+                            style="position: absolute; right: 0.25rem; top: 50%; transform: translateY(-50%); padding: 0.375rem; color: var(--paper-muted); background: none; border: none; cursor: pointer; transition: color 0.15s;"
+                            onmouseover="this.style.color='var(--paper-primary)'" onmouseout="this.style.color='var(--paper-muted)'"
+                            onclick="togglePasswordVisibility('password', 'icon-pw-open', 'icon-pw-closed')"
+                        >
+                            <svg id="icon-pw-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="icon-pw-closed" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Password strength meter -->
+                    <div class="strength-bar" id="strength-bars">
+                        <span id="bar-1"></span>
+                        <span id="bar-2"></span>
+                        <span id="bar-3"></span>
+                        <span id="bar-4"></span>
+                    </div>
+                    <div id="strength-label" style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); margin-top: 0.35rem;">
+                        Kekuatan: belum diisi
+                    </div>
+                </div>
+
+                <!-- Konfirmasi Passphrase -->
+                <div>
+                    <label for="confirm_password" class="field-label">Konfirmasi Passphrase <span style="color: var(--err-paper);">*</span></label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            autocomplete="new-password"
+                            placeholder="Ulangi passphrase"
+                            required
+                            class="input-line pr-10"
+                        >
+                        <button
+                            type="button"
+                            aria-label="Tampilkan atau sembunyikan konfirmasi passphrase"
+                            style="position: absolute; right: 0.25rem; top: 50%; transform: translateY(-50%); padding: 0.375rem; color: var(--paper-muted); background: none; border: none; cursor: pointer; transition: color 0.15s;"
+                            onmouseover="this.style.color='var(--paper-primary)'" onmouseout="this.style.color='var(--paper-muted)'"
+                            onclick="togglePasswordVisibility('confirm_password', 'icon-cpw-open', 'icon-cpw-closed')"
+                        >
+                            <svg id="icon-cpw-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="icon-cpw-closed" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="match-err" class="inline-err">Passphrase tidak cocok.</div>
+                </div>
+
+                <!-- Tombol submit -->
+                <div style="padding-top: 0.75rem;">
+                    <button
+                        type="submit"
+                        id="btn-signup"
+                        class="btn"
+                    >
+                        Buat akun outlet
+                    </button>
+                </div>
+            </form>
+
+            <!-- Cross-link ke login -->
+            <p style="margin-top: 1.5rem; text-align: center; font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted);">
+                Sudah memiliki akun?
+                <a href="/login" style="color: var(--paper-primary); text-decoration: underline; font-weight: 600;">Masuk</a>
+            </p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function togglePasswordVisibility(inputId, openIconId, closedIconId) {
+        const input = document.getElementById(inputId);
+        const eyeOpen = document.getElementById(openIconId);
+        const eyeClosed = document.getElementById(closedIconId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeOpen.classList.add('hidden');
+            eyeClosed.classList.remove('hidden');
+        } else {
+            input.type = 'password';
+            eyeOpen.classList.remove('hidden');
+            eyeClosed.classList.add('hidden');
+        }
+    }
+
+    const pwInput = document.getElementById('password');
+    const cpwInput = document.getElementById('confirm_password');
+    const matchErr = document.getElementById('match-err');
+    const strengthLabel = document.getElementById('strength-label');
+    const bars = [
+        document.getElementById('bar-1'),
+        document.getElementById('bar-2'),
+        document.getElementById('bar-3'),
+        document.getElementById('bar-4')
+    ];
+
+    function evaluateStrength(val) {
+        if (!val) return 0;
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (val.length >= 12) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
+        return Math.min(4, Math.max(1, score));
+    }
+
+    const strengthText = [
+        'Kekuatan: belum diisi',
+        'Kekuatan: lemah (butuh >= 8 karakter & variasi)',
+        'Kekuatan: cukup',
+        'Kekuatan: kuat',
+        'Kekuatan: sangat kuat (kriptografis)'
+    ];
+
+    pwInput.addEventListener('input', () => {
+        const val = pwInput.value;
+        const score = val.length === 0 ? 0 : evaluateStrength(val);
+
+        bars.forEach((bar, idx) => {
+            bar.className = '';
+            if (idx < score) {
+                bar.classList.add('filled-' + score);
+            }
+        });
+
+        strengthLabel.textContent = strengthText[score];
+        checkMatch();
+    });
+
+    function checkMatch() {
+        if (cpwInput.value && pwInput.value !== cpwInput.value) {
+            matchErr.classList.add('show');
+            cpwInput.classList.add('is-error');
+        } else {
+            matchErr.classList.remove('show');
+            cpwInput.classList.remove('is-error');
+        }
+    }
+
+    cpwInput.addEventListener('input', checkMatch);
+
+    const form = document.getElementById('signup-form');
+    form.addEventListener('submit', (e) => {
+        if (pwInput.value !== cpwInput.value) {
+            e.preventDefault();
+            matchErr.classList.add('show');
+            cpwInput.focus();
+        }
+    });
+</script>
+{% endblock %}
