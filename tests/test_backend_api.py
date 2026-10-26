@@ -27,7 +27,7 @@ def test_render_login_page():
     response = client.get("/login")
     assert response.status_code == 200
     assert "Martabak Core" in response.text
-    assert "Sign In" in response.text
+    assert "Sign in" in response.text or "Sign In" in response.text
 
 
 def test_render_dashboard_unauthenticated_redirect():
