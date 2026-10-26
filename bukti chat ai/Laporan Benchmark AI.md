@@ -1,0 +1,4 @@
+https://outlook.office.com/chat/share/eyJzaGFyZUlkIjoiZjEwNTZmNjYtMDFkYi00MGUzLTk2N2ItZjI4NTUzYmI5YzY2IiwiY29udmVyc2F0aW9uSWQiOiJjYzc2MzU4ZS03Y2JmLTRjMzAtODczMC00MmQ3NjQ1NzYwMGMifQ%3D%3D
+
+
+https://share.gemini.google/HuCQ3IDHPkk9
