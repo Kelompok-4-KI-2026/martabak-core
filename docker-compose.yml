@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    container_name: martabak_core_vault
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persistent storage for cryptographic keys and encrypted files
+      - ./keys:/app/keys
+      - ./encrypted_storage:/app/encrypted_storage

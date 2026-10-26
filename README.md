@@ -1,104 +1,292 @@
+<div align="center">
 
-# 🍫 Martabak Core: The Franchise Secret Recipe & Merchant Vault
+# 🍫 Martabak Core
 
-> *"Because your chocolate-peanut ratio is trade secret, and your franchisee's KTP scan shouldn't leak onto a public server."*
+### The Franchise Secret Recipe & Merchant Vault
+
+*Because your chocolate-peanut ratio is a trade secret, and your franchisee's KTP scan shouldn't leak onto a public server.*
+
+<br/>
+
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Storage-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel&logoColor=white)](https://martabak-core.vercel.app)
+[![PyCryptodome](https://img.shields.io/badge/Crypto-pycryptodome-B8860B)](https://pypi.org/project/pycryptodome/)
+
+<br/>
+
+[![🚀 Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Live_Demo-martabak--core.vercel.app-000000?style=for-the-badge)](https://martabak-core.vercel.app)
+[![📚 API Docs](https://img.shields.io/badge/%F0%9F%93%9A_API_Docs-Swagger-009688?style=for-the-badge)](https://martabak-core.vercel.app/docs)
+
+</div>
+
+<br/>
+
+<details>
+<summary><b>📑 Table of Contents</b></summary>
+
+- [Overview](#overview)
+- [Assignment Requirements (Tugas 1)](#assignment-requirements)
+- [Cryptography & Security Architecture](#cryptography--security-architecture)
+- [System Architecture & Tech Stack](#system-architecture--tech-stack)
+- [Getting Started](#getting-started)
+- [Configuration (.env)](#configuration)
+- [Deployment (Vercel + Supabase)](#deployment)
+- [Running the Test Suite](#testing)
+- [Project Structure](#project-structure)
+- [Performance Benchmark](#benchmark)
+- [Team](#team)
+
+</details>
 
 ---
 
-## What is this project?
-Welcome to **Martabak Core**—a production-ready, hyper-secure web application built for a high-turnover culinary franchise. 
+<a id="overview"></a>
 
-Behind the casual name, this system is engineered to solve a serious real-world problem: **how to securely store, encrypt, and manage sensitive merchant data and proprietary trade secrets** while complying strictly with modern data protection regulations (such as **UU PDP and GDPR**). 
+## 📖 Overview
 
-*Spoiler alert: Whether this ends up running a real family martabak empire someday, or just serves as proof that you can build a bulletproof vault from scratch when someone says "we hired a contractor," Martabak Core gets the job done.*
+**Martabak Core** is a production-ready, hyper-secure web application built for a high-turnover culinary franchise. Behind the casual name, this system solves a serious real-world problem: **how to securely store, encrypt, and manage sensitive merchant data and proprietary trade secrets** while complying strictly with modern data protection regulations (**UU PDP & GDPR**).
+
+Files are encrypted **client-side of the storage layer** (AES-256-CBC / DES-CBC / RC4), ciphertext lives in **private Supabase Storage buckets**, keys are kept in a **separate isolated bucket**, and only metadata touches the database — so even a full database dump yields nothing but opaque blobs.
+
+> 🔗 **Try it now:** [martabak-core.vercel.app](https://martabak-core.vercel.app) — register an account, upload a file, and inspect the ciphertext yourself.
 
 ---
 
-## How We Solved the Assignment Requirements (`Tugas 1`)
+<a id="assignment-requirements"></a>
 
-To satisfy our university cryptography assignment, every single requirement from the prompt is hardcoded into our architecture:
+## ✅ How We Solved the Assignment Requirements (`Tugas 1`)
 
-1. **Concrete Scenario & Data Categories:** 
-   We chose a franchise merchant portal where users handle four mandatory data types:
-   * **Personal Data:** Franchisee full name, phone number, and bank account details.
+Every requirement from the prompt is enforced in our architecture:
+
+1. **Concrete Scenario & Data Categories** — Franchise merchant portal supporting four data types:
+   * **Personal Data:** Franchisee full name, phone number, and agreement details.
    * **Identity Document Scans:** Scanned KTP and NPWP documents.
-   * **Office Documents:** The proprietary, highly confidential **Secret Batter & Topping Formula PDF**.
-   * **Videos:** High-definition kitchen SOP and dough-folding masterclass videos.
-2. **Privacy Law Alignment (UU PDP / GDPR):** 
-   Under data privacy legislation, unencrypted PII and commercial trade secrets expose businesses to massive legal liability. Martabak Core enforces zero-knowledge storage principles.
-3. **The Three Ciphers (`AES`, `DES`, `RC4`):** 
-   We implemented all three algorithms natively using `pycryptodome`.
-4. **Strict Authentication & Zero-Leak Retrieval:** 
-   Only authenticated users can fetch their own encrypted files. The backend enforces strict user-ID isolation checks so nobody can peek at another merchant's recipe files.
+   * **Office Documents:** Confidential recipe formulas and operational standards.
+   * **Videos:** Masterclass kitchen SOP and dough preparation training videos.
+2. **Privacy Law Alignment (UU PDP / GDPR)** — Under data privacy legislation, unencrypted PII and commercial trade secrets expose businesses to massive legal liability. Martabak Core enforces zero-knowledge storage principles.
+3. **The Three Ciphers (`AES-256-CBC`, `DES-CBC`, `RC4`)** — Implemented natively using `pycryptodome` (strictly avoiding ECB mode).
+4. **Strict Authentication & Multi-Tenant Isolation** — Only authenticated users can access their own encrypted files. The backend enforces user-level isolation checks.
+5. **Ciphertext Inspector & Avalanche Effect** — Built-in cryptographic inspector displaying real-time Shannon entropy ($H \le 8.00$), block segmentation mapping, IEEE 802/POSIX hex dump, and live avalanche effect (bit diffusion) analysis.
 
 ---
 
-## Cryptography & Security Architecture
+<a id="cryptography--security-architecture"></a>
 
-* **No ECB Mode Allowed:** Electronic Codebook (ECB) mode leaves visual patterns visible in encrypted data. We strictly use secure block modes like **CBC (Cipher Block Chaining)** with randomized IVs and **RC4** stream ciphers.
-* **Integrity Guarantee:** Decryption routines ensure that files return 100% intact (zero binary corruption upon retrieval).
+## 🔐 Cryptography & Security Architecture
+
+* **No ECB Mode Allowed** — Electronic Codebook (ECB) leaves visual patterns visible in encrypted data. We strictly enforce **CBC (Cipher Block Chaining)** with randomized IVs for block ciphers and **RC4** stream ciphers.
+* **Integrity Guarantee** — Decryption routines ensure that files return 100% intact (zero binary corruption upon retrieval).
+* **Key Management** — Cryptographic keys are generated with `os.urandom` and stored in an **isolated, private `keys` bucket** per asset — physically separated from ciphertext.
+* **Path-Traversal Protection** — All storage object names are sanitized to basenames before touching any storage backend.
+* **Secrets Discipline** — `SECRET_KEY` and `DATABASE_URL` have **no defaults**; the app refuses to boot without them. `.env` is git-ignored and never shipped to the deployment bundle.
 
 ---
 
-## System Architecture & Tech Stack
+<a id="system-architecture--tech-stack"></a>
 
-We built this entirely on a lightweight, lightning-fast **100% Python Stack**:
-* **Backend:** FastAPI (Automatic documentation, seamless async handling).
-* **Database & ORM:** PostgreSQL + SQLAlchemy (Robust relational user and metadata storage).
-* **Frontend:** Jinja2 Templates + Tailwind CSS via CDN (Clean, responsive UI with zero heavy JavaScript bundling overhead).
-* **Crypto Engine:** Python `pycryptodome`.
+## 🏗️ System Architecture & Tech Stack
+
+| Layer | Technology |
+|:--|:--|
+| Backend | **FastAPI** (Python 3.12, async, automatic OpenAPI docs) |
+| Database & ORM | **PostgreSQL** (Supabase cloud pooler) via SQLAlchemy + `psycopg2-binary` |
+| Encrypted Blob Storage | **Supabase Storage** — private buckets `encrypted-storage` (ciphertext) & `keys` (per-file keys) |
+| Frontend | **Jinja2 Templates** + Tailwind CSS (CDN) + Typography Trio (*Young Serif*, *Schibsted Grotesk*, *Martian Mono*) |
+| Crypto Engine | **pycryptodome** (AES-256-CBC, DES-CBC, RC4) |
+| Hosting | **Vercel** (serverless Python runtime, read-only filesystem) |
+| Config | **python-dotenv** with strict environment-variable enforcement |
 
 ```text
- [ Franchisee Client Browser ] 
-              │ (Multipart Upload / Auth Token)
+ [ Franchisee Client Browser ]
+              │ (Multipart Upload / Auth Cookie)
               ▼
-    [ FastAPI Application Server ]
-      ├── Auth & Session Guards (User Isolation)
-      ├── File Type Validator (Personal Data, ID Scans, PDFs, Videos)
-      └── Crypto Core Engine ──► [ AES / DES / RC4 Execution ]
+     [ FastAPI on Vercel ]  ← api/index.py entrypoint
+       ├── Auth & Session Guards (User Isolation)
+       ├── File Type Validator (Personal Data, ID Scans, PDFs, Videos)
+       └── Crypto Core Engine ──► [ AES / DES / RC4 Execution ]
                                           │
-            ┌─────────────────────────────┴─────────────────────────────┐
-            ▼                                                           ▼
-   [ PostgreSQL Database ]                                    [ Local Encrypted Vault ]
-   (User Metadata & Cipher Logs)                              (/encrypted_storage/*.enc)
-
+            ┌─────────────────────────────┼─────────────────────────────┐
+            ▼                             ▼                             ▼
+ [ PostgreSQL (Supabase) ]   [ Storage: encrypted-storage ]   [ Storage: keys ]
+ (users & vault_files meta)      (*.enc ciphertext blobs)      (*.key isolated)
 ```
+
+The Vercel filesystem is **read-only and ephemeral** — the application performs zero local disk I/O in production. Every byte goes through Supabase REST APIs.
 
 ---
 
-## Quick Start Guide (For the Squad)
+<a id="getting-started"></a>
 
-If you want to run this locally on your machine, follow these steps:
+## 🚀 Getting Started
 
-1. **Clone and enter the repository:**
+**Prerequisites:** Python 3.12+, `git`, and a free [Supabase](https://supabase.com/) project.
+
+### Option 1 — Run Locally (Recommended for Development)
+
 ```bash
-git clone [https://github.com/Kelompok-4-KI-2026/martabak-core.git](https://github.com/Kelompok-4-KI-2026/martabak-core.git)
+# 1. Clone and enter the repository
+git clone https://github.com/Kelompok-4-KI-2026/martabak-core.git
 cd martabak-core
 
-```
-
-
-2. **Install dependencies:**
-```bash
+# 2. Create a virtual environment and install dependencies
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
+# 3. Create your .env (see Configuration below)
+cp .env.example .env   # or create it manually — never commit this file
+
+# 4. Run the FastAPI server
+uvicorn main:app --reload --port 8000
 ```
 
+**You're live 🎉**
 
-3. **Run the FastAPI server:**
+| Page | URL |
+|:--|:--|
+| Web Portal (Login) | http://127.0.0.1:8000/login |
+| Interactive API Docs (Swagger) | http://127.0.0.1:8000/docs |
+| Health Check | http://127.0.0.1:8000/health |
+
+### Option 2 — Run with Docker
+
+Persistent volumes for local-mode keys and encrypted files:
+
 ```bash
-uvicorn main:app --reload
-
+docker-compose up --build -d   # build and start
+docker-compose logs -f         # follow logs
 ```
 
-
-4. **Explore the interactive API docs:**
-Open your browser and navigate to `http://127.0.0.1:8000/docs` to test endpoints directly via Swagger UI.
+The app will be accessible at `http://localhost:8000`.
 
 ---
 
-## Performance Benchmark & Evaluation
+<a id="configuration"></a>
 
-Our evaluation runner (`benchmarks/runner.py`) measures encryption/decryption speeds and throughput across varying file sizes (from small 1KB text PII strings to heavy 5MB SOP videos).
+## ⚙️ Configuration (`.env`)
 
-The detailed performance metrics, graphs, and human analysis are compiled directly into our final 2-page A4 report, interpreting why modern AES-256-CBC outperforms legacy DES and why RC4 stream ciphers behave differently in practice.
+Create a `.env` in the project root (never commit it — it is git-ignored):
+
+```env
+# Supabase PostgreSQL Connection String (REQUIRED — no default)
+DATABASE_URL="postgresql://postgres.<PROJECT_REF>:<DB_PASSWORD>@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"
+
+# Application Secret Key for session signing (REQUIRED — no default, use a long random string)
+SECRET_KEY="your-strong-random-secret-key"
+
+# Supabase Storage credentials — enables remote storage mode
+SUPABASE_URL="https://<PROJECT_REF>.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="<SERVICE_ROLE_KEY>"
+
+# Optional tuning
+ACCESS_TOKEN_EXPIRE_MINUTES="120"
+```
+
+| Variable | Required | Default | Purpose |
+|:--|:--:|:--|:--|
+| `SECRET_KEY` | ✅ | — | Session/JWT signing. App refuses to boot if empty. |
+| `DATABASE_URL` | ✅ | — | Supabase Postgres pooler connection string. |
+| `SUPABASE_URL` | ◐ | — | With the service-role key, switches storage to Supabase buckets. |
+| `SUPABASE_SERVICE_ROLE_KEY` | ◐ | — | Server-side key for Storage REST API (alias: `SUPABASE_KEY`). |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | ⬜ | `120` | Session lifetime. |
+| `SUPABASE_BUCKET_ENCRYPTED` | ⬜ | `encrypted-storage` | Ciphertext bucket name. |
+| `SUPABASE_BUCKET_KEYS` | ⬜ | `keys` | Key vault bucket name. |
+| `STORAGE_DIR` / `KEYS_DIR` | ⬜ | `./encrypted_storage`, `./keys` | Local fallback dirs (dev/tests only). |
+
+**Storage modes:** if `SUPABASE_URL` + service-role key are set, files go to the two **private** Supabase buckets. Without them, the app falls back to local directories (handy for offline tests — production must use Supabase).
+
+---
+
+<a id="deployment"></a>
+
+## 🌐 Deployment (Vercel + Supabase)
+
+The app is deployed at **[martabak-core.vercel.app](https://martabak-core.vercel.app)** via the Vercel serverless Python runtime.
+
+**What we ship:**
+
+* `api/index.py` — serverless entrypoint that mounts the FastAPI `app`.
+* `vercel.json` — routes all traffic to the entrypoint via `@vercel/python`.
+* `.vercelignore` — strips `.env`, local blobs, DBs, and tests from the deployment bundle.
+
+**Vercel Project → Settings → Environment Variables** (set for *Production* and *Preview*):
+
+| Variable | Value |
+|:--|:--|
+| `SECRET_KEY` | long random string |
+| `DATABASE_URL` | Supabase Postgres pooler URI |
+| `SUPABASE_URL` | `https://<PROJECT_REF>.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key |
+
+**Supabase setup:**
+
+1. Two **private** buckets: `encrypted-storage` (ciphertext) and `keys` (per-file keys).
+2. Tables `users` and `vault_files` live in Postgres (metadata only — never plaintext).
+3. Migrating an existing local vault? Use `scripts/migrate_storage_to_supabase.py` (idempotent, supports `--dry-run`).
+
+Deploy from your machine with the Vercel CLI:
+
+```bash
+vercel --prod
+```
+
+---
+
+<a id="testing"></a>
+
+## 🧪 Running the Test Suite
+
+```bash
+env -u PYTHONPATH .venv/bin/python -m pytest -p no:launch_testing
+```
+
+45 tests cover the crypto engine, key manager, storage client (local & Supabase), auth isolation, and the full upload → encrypt → store → download → decrypt round-trip.
+
+---
+
+<a id="project-structure"></a>
+
+## 📁 Project Structure
+
+```text
+martabak-core/
+├── main.py                  # FastAPI app + web portal routes
+├── config.py                # .env loading & strict validation
+├── core/                    # crypto engine, key manager, storage client
+├── routers/                 # API routers (auth, vault)
+├── templates/               # Jinja2 frontend
+├── api/index.py             # Vercel serverless entrypoint
+├── scripts/                 # DB & storage migration helpers
+├── tests/                   # pytest suite
+├── benchmarks/              # encryption throughput evaluation
+└── vercel.json              # Vercel deployment config
+```
+
+---
+
+<a id="benchmark"></a>
+
+## 📈 Performance Benchmark & Evaluation
+
+<details>
+<summary>Click to expand</summary>
+
+Our evaluation runner (`benchmarks/runner.py`) measures encryption/decryption speeds and throughput across varying file sizes — from small 1KB text PII strings to heavy 5MB SOP videos.
+
+</details>
+
+---
+
+<a id="team"></a>
+
+## 👥 Team
+
+Built with ☕ and 🍫 by **Kelompok 4** — Keamanan Informasi 2026.
+
+**Repository:** [github.com/Kelompok-4-KI-2026/martabak-core](https://github.com/Kelompok-4-KI-2026/martabak-core)
+
+<div align="center">
+<sub>Martabak Core — secret recipes deserve real cryptography.</sub>
+</div>

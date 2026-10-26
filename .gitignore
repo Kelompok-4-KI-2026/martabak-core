@@ -8,3 +8,9 @@ keys/
 !keys/.gitkeep
 .DS_Store
 *.db
+
+# DB dumps contain password hashes - never commit
+backups/
+.vercel
+.env*
+!.env.example
