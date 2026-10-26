@@ -1,129 +1,123 @@
 {% extends "base.html" %}
-{% block title %}Operational Ledger &amp; Vault | Martabak Core{% endblock %}
+{% block title %}Ledger Operasional | Martabak Core{% endblock %}
 
 {% block content %}
 <div class="max-w-[1380px] w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col gap-8 stagger-in">
 
-    <!-- ═══════════════  ASYMMETRIC SUMMARY HEADER  ═══════════════ -->
-    <section class="border-b border-ink-2 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-            <div class="font-mono text-[10px] tracking-widest uppercase text-muted font-semibold mb-1">
-                OUTLET OPERATIONS &middot; REPOSITORY #04
+    <!-- ═══  ASYMMETRIC SUMMARY HEADER  ═══ -->
+    <section style="border-bottom: 1px solid var(--ink-2); padding-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+            <div>
+                <h1 style="font-family: 'Young Serif', Georgia, serif; font-size: clamp(1.8rem, 3.5vw, 2.5rem); line-height: 1.1; letter-spacing: -0.015em; color: var(--ink-primary);">
+                    Registri arsip <em>terenkripsi</em>
+                </h1>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-muted); margin-top: 0.25rem;">
+                    Hanya aset milik Anda yang tampil di sini.
+                </p>
             </div>
-            <h1 class="font-display text-3xl sm:text-4xl font-normal text-cream tracking-tight">
-                Franchise Asset Ledger
-            </h1>
-        </div>
 
-        <!-- Asymmetric summary: Large figure in Fraunces display font next to compact mono facts -->
-        <div class="flex items-center gap-6 bg-ink border border-ink-2 px-5 py-3">
-            <div class="flex items-baseline gap-2 border-r border-ink-2 pr-6">
-                <span class="font-display text-4xl font-semibold text-accent leading-none">
-                    {{ files|length if files else 0 }}
-                </span>
-                <span class="font-mono text-[10px] text-muted tracking-wider uppercase">
-                    Stored<br>Assets
-                </span>
-            </div>
-            <div class="font-mono text-[11px] text-muted space-y-1">
-                <div>DEFAULT CIPHER: <span class="text-cream font-medium">AES-256-CBC</span></div>
-                <div>INTEGRITY POLICY: <span class="text-cream font-medium">STRICT NO-ECB</span></div>
-                <div>ACTIVE NODE: <span class="text-cream font-medium">{{ user.username if user else 'OUTLET-HQ' }}</span></div>
+            <!-- Asymmetric summary: angka besar + fakta kompak -->
+            <div style="display: flex; align-items: center; gap: 1.5rem; background: var(--ink-2); border: 1px solid #3a2c24; padding: 0.85rem 1.25rem; border-radius: 2px;">
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; border-right: 1px solid #3a2c24; padding-right: 1.25rem;">
+                    <span style="font-family: 'Young Serif', Georgia, serif; font-size: 2.5rem; line-height: 1; color: var(--accent-ink);">
+                        {{ files|length if files else 0 }}
+                    </span>
+                    <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--ink-muted);">
+                        aset
+                    </span>
+                </div>
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; color: var(--ink-muted); line-height: 1.8;">
+                    <div>default: <span style="color: var(--ink-primary);">AES-256-CBC</span></div>
+                    <div>kebijakan: <span style="color: var(--ink-primary);">no ECB</span></div>
+                    <div>node: <span style="color: var(--ink-primary);">{{ user.username if user else 'OUTLET' }}</span></div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ═══════════════  12-COLUMN WORKSPACE GRID  ═══════════════ -->
+    <!-- ═══  12-COLUMN WORKSPACE GRID  ═══ -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-        <!-- ────────────────  LEFT: UPLOAD / ENCRYPT PANEL (5 COLS)  ──────────────── -->
+        <!-- ────  LEFT: FORM UPLOAD/ENKRIPSI (5 KOLOM)  ──── -->
         <aside class="lg:col-span-5 paper border border-rule p-6 sm:p-7 flex flex-col gap-6">
-            <div class="border-b border-rule pb-3 flex items-center justify-between">
-                <div>
-                    <h2 class="font-display text-lg font-semibold text-ink">Deposit Asset</h2>
-                    <p class="font-mono text-[10px] text-muted uppercase tracking-wider">Encrypt &amp; Append to Ledger</p>
-                </div>
-                <span class="cipher-tag">FIPS STANDARDS</span>
+            <div style="border-bottom: 1px solid var(--rule); padding-bottom: 0.75rem;">
+                <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.15rem; color: var(--paper-primary);">Enkripsi &amp; simpan aset</h2>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); margin-top: 0.2rem;">Upload dokumen, pilih cipher, lalu simpan ke vault.</p>
             </div>
 
             <form id="upload-form" action="/api/v1/vault/upload" method="POST" enctype="multipart/form-data" class="space-y-5">
 
-                <!-- Data Category Select -->
+                <!-- Kategori aset -->
                 <div>
-                    <label for="file_type" class="field-label">Asset Classification</label>
+                    <label for="file_type" class="field-label">Kategori aset</label>
                     <select id="file_type" name="file_type" required class="vault-select">
-                        <option value="personal_data">Personal Data (Franchisee PII &amp; Agreements)</option>
-                        <option value="id_scan">Identity Scans (KTP / NPWP / Official ID)</option>
-                        <option value="office_doc">Secret Recipe &amp; Proprietary Documentation</option>
-                        <option value="video">Kitchen SOP Masterclass (Training Video)</option>
+                        <option value="personal_data">Data pribadi (PII &amp; perjanjian mitra)</option>
+                        <option value="id_scan">Scan identitas (KTP / NPWP)</option>
+                        <option value="office_doc">Resep rahasia &amp; dokumen operasional</option>
+                        <option value="video">Video SOP dapur (Masterclass)</option>
                     </select>
-                    <div id="category-hint" class="font-mono text-[10px] text-muted mt-1.5">
-                        Confidential batter formula and operational standards.
-                    </div>
+                    <div id="category-hint" style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); margin-top: 0.4rem;"></div>
                 </div>
 
-                <!-- Cipher Choice as Hard-Bordered Radio List -->
+                <!-- Pilih cipher -->
                 <div>
-                    <label class="field-label">Encryption Engine</label>
-                    <div class="flex flex-col" role="radiogroup" aria-label="Cipher Choice">
+                    <label class="field-label">Pilih cipher enkripsi</label>
+                    <div class="flex flex-col" role="radiogroup" aria-label="Pilihan cipher">
 
                         <!-- AES -->
                         <label class="cipher-opt">
                             <input type="radio" name="cipher_choice" id="cipher-aes" value="AES" checked>
-                            <div class="flex-1 min-w-0">
-                                <div class="font-semibold text-xs tracking-wide">AES-256</div>
-                                <div class="font-mono text-[10px] text-muted">Primary standard &middot; 256-bit CBC</div>
+                            <div style="flex: 1;">
+                                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 13px; color: var(--paper-primary); font-weight: 600;">AES-256-CBC</div>
+                                <div style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted);">Standar utama &middot; 256-bit CBC &middot; <strong>default</strong></div>
                             </div>
-                            <span class="font-mono text-[10px] text-muted bg-cream-2 px-1.5 py-0.5 border border-rule">RECOMMENDED</span>
                         </label>
 
                         <!-- DES -->
                         <label class="cipher-opt">
                             <input type="radio" name="cipher_choice" id="cipher-des" value="DES">
-                            <div class="flex-1 min-w-0">
-                                <div class="font-semibold text-xs tracking-wide">DES</div>
-                                <div class="font-mono text-[10px] text-muted">Legacy compatibility &middot; 56-bit CBC</div>
+                            <div style="flex: 1;">
+                                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 13px; color: var(--paper-primary); font-weight: 600;">DES-CBC</div>
+                                <div style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted);">Legacy, kunci 56-bit, rentan brute-force</div>
                             </div>
-                            <span class="font-mono text-[10px] text-muted bg-cream-2 px-1.5 py-0.5 border border-rule">LEGACY</span>
                         </label>
 
                         <!-- RC4 -->
                         <label class="cipher-opt">
                             <input type="radio" name="cipher_choice" id="cipher-rc4" value="RC4">
-                            <div class="flex-1 min-w-0">
-                                <div class="font-semibold text-xs tracking-wide">RC4</div>
-                                <div class="font-mono text-[10px] text-muted">Stream cipher &middot; High throughput</div>
+                            <div style="flex: 1;">
+                                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 13px; color: var(--paper-primary); font-weight: 600;">RC4</div>
+                                <div style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted);">Deprecated, keystream bias &mdash; stream cipher</div>
                             </div>
-                            <span class="font-mono text-[10px] text-muted bg-cream-2 px-1.5 py-0.5 border border-rule">STREAM</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Drop Zone for File -->
+                <!-- Drop zone file -->
                 <div>
-                    <label for="file" class="field-label">Payload File</label>
+                    <label for="file" class="field-label">File payload</label>
                     <div id="drop-zone" class="drop-zone p-6 flex flex-col items-center justify-center text-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-2" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--paper-muted); margin-bottom: 0.5rem;" aria-hidden="true">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="17 8 12 3 7 8"/>
                             <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
-                        <div class="text-xs font-medium text-ink">
-                            Drop archive file here or <span class="text-accent-dark underline">browse local drive</span>
+                        <div style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-primary);">
+                            Seret file ke sini atau <span style="color: var(--accent-dk); text-decoration: underline; cursor: pointer;">pilih dari komputer</span>
                         </div>
-                        <div id="selected-filename" class="font-mono text-[11px] text-ink font-semibold mt-2 hidden"></div>
+                        <div id="selected-filename" style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; color: var(--paper-primary); font-weight: 600; margin-top: 0.5rem;" class="hidden"></div>
                         <input
                             type="file"
                             id="file"
                             name="file"
                             required
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            aria-label="Select file for encryption"
+                            aria-label="Pilih file untuk enkripsi"
                         >
                     </div>
                 </div>
 
-                <!-- Submit Button -->
+                <!-- Tombol submit -->
                 <button
                     type="submit"
                     id="btn-upload"
@@ -133,77 +127,77 @@
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <span>Encrypt &amp; Append to Ledger</span>
+                    <span>Enkripsi &amp; simpan ke vault</span>
                 </button>
             </form>
         </aside>
 
-        <!-- ────────────────  RIGHT: RULED LEDGER TABLE (7 COLS)  ──────────────── -->
+        <!-- ────  RIGHT: TABEL LEDGER (7 KOLOM)  ──── -->
         <main class="lg:col-span-7 paper border border-rule flex flex-col">
 
-            <!-- Table Header Strip with Search Filter -->
-            <div class="p-4 sm:p-5 border-b border-rule flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <h2 class="font-display text-lg font-semibold text-ink">Archival Registry</h2>
-                    <span class="font-mono text-[10px] text-muted uppercase tracking-wider">Historical Records</span>
-                </div>
+            <!-- Header tabel + filter -->
+            <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.1rem; color: var(--paper-primary);">Arsip vault</h2>
+                        <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted);">{{ files|length if files else 0 }} rekaman</span>
+                    </div>
 
-                <!-- Search Filter Input -->
-                <div class="flex items-center gap-2">
-                    <label for="vault-search" class="font-mono text-[10px] text-muted uppercase tracking-widest sr-only">Filter</label>
-                    <input
-                        type="text"
-                        id="vault-search"
-                        placeholder="Filter records..."
-                        class="bg-cream-2 border border-rule text-ink placeholder-muted font-mono text-xs px-3 py-1.5 focus:border-ink outline-none"
-                    >
+                    <!-- Filter input -->
+                    <div>
+                        <label for="vault-search" class="sr-only">Filter rekaman</label>
+                        <input
+                            type="text"
+                            id="vault-search"
+                            placeholder="Filter rekaman..."
+                            style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; background: var(--cream-2); border: 1px solid var(--rule); color: var(--paper-primary); padding: 0.35rem 0.65rem; outline: none; border-radius: 2px;"
+                        >
+                    </div>
                 </div>
             </div>
 
-            <!-- Ledger Table Container -->
+            <!-- Tabel ledger -->
             <div class="overflow-x-auto">
                 <table class="ledger-table" id="vault-table">
                     <thead>
                         <tr>
-                            <th>Record Name</th>
-                            <th>Category</th>
+                            <th>Nama file</th>
+                            <th>Kategori</th>
                             <th>Cipher</th>
-                            <th>Size</th>
-                            <th>Timestamp</th>
-                            <th style="text-align: right;">Action</th>
+                            <th>Ukuran</th>
+                            <th>Waktu simpan</th>
+                            <th style="text-align: right;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="vault-tbody">
                         {% if files %}
                             {% for f in files %}
                             <tr class="vault-row">
-                                <!-- Record Name -->
+                                <!-- Nama file -->
                                 <td>
-                                    <div class="flex items-center gap-2">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted flex-shrink-0" aria-hidden="true">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--paper-muted); flex-shrink: 0;" aria-hidden="true">
                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                             <polyline points="14 2 14 8 20 8"/>
                                         </svg>
-                                        <span class="font-medium text-ink truncate max-w-[160px] sm:max-w-[200px]" title="{{ f.original_filename }}">
+                                        <span style="font-weight: 500; color: var(--paper-primary); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ f.original_filename }}">
                                             {{ f.original_filename }}
                                         </span>
                                     </div>
                                 </td>
 
-                                <!-- Category -->
-                                <td>
-                                    <span class="font-mono text-[10px] text-muted uppercase tracking-wider">
-                                        {{ f.file_type|replace('_', ' ') }}
-                                    </span>
+                                <!-- Kategori -->
+                                <td style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted);">
+                                    {{ f.file_type|replace('_', ' ') }}
                                 </td>
 
-                                <!-- Cipher Used -->
+                                <!-- Cipher -->
                                 <td>
                                     <span class="cipher-tag">{{ f.cipher_used }}</span>
                                 </td>
 
-                                <!-- File Size -->
-                                <td class="font-mono text-xs text-muted">
+                                <!-- Ukuran file -->
+                                <td style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; color: var(--paper-muted); font-variant-numeric: tabular-nums;">
                                     {% if f.file_size %}
                                         {{ (f.file_size / 1024)|round(1) }} KB
                                     {% else %}
@@ -212,42 +206,54 @@
                                 </td>
 
                                 <!-- Timestamp -->
-                                <td class="font-mono text-[11px] text-muted whitespace-nowrap">
-                                    {{ f.created_at.strftime('%Y-%m-%d %H:%M') if f.created_at else 'ARCHIVE' }}
+                                <td style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); white-space: nowrap; font-variant-numeric: tabular-nums;">
+                                    {{ f.created_at.strftime('%Y-%m-%d %H:%M') if f.created_at else '&mdash;' }}
                                 </td>
 
-                                <!-- Action Link -->
-                                <td style="text-align: right;">
-                                    <a
-                                        href="/api/v1/vault/download/{{ f.id }}"
-                                        id="download-{{ f.id }}"
-                                        class="inline-flex items-center gap-1 font-mono text-xs font-semibold text-accent-dark hover:text-ink transition-colors underline"
-                                        title="Decrypt and download file"
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                            <polyline points="7 10 12 15 17 10"/>
-                                            <line x1="12" y1="15" x2="12" y2="3"/>
-                                        </svg>
-                                        <span>DECRYPT</span>
-                                    </a>
+                                <!-- Aksi: Decrypt + Inspector -->
+                                <td style="text-align: right; white-space: nowrap;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.75rem;">
+                                        <a
+                                            href="/vault/{{ f.id }}/inspect"
+                                            id="inspect-{{ f.id }}"
+                                            style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); text-decoration: underline; transition: color 0.15s;"
+                                            onmouseover="this.style.color='var(--paper-primary)'" onmouseout="this.style.color='var(--paper-muted)'"
+                                            title="Lihat detail enkripsi"
+                                        >
+                                            Inspeksi
+                                        </a>
+                                        <a
+                                            href="/api/v1/vault/download/{{ f.id }}"
+                                            id="download-{{ f.id }}"
+                                            style="display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; color: var(--accent-dk); text-decoration: underline; transition: color 0.15s;"
+                                            onmouseover="this.style.color='var(--paper-primary)'" onmouseout="this.style.color='var(--accent-dk)'"
+                                            title="Dekripsi dan unduh file"
+                                        >
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="7 10 12 15 17 10"/>
+                                                <line x1="12" y1="15" x2="12" y2="3"/>
+                                            </svg>
+                                            Unduh
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <!-- Empty State: Custom Drawn SVG Outline Ledger -->
+                            <!-- Empty state dengan SVG desain -->
                             <tr id="empty-row">
-                                <td colspan="6" class="py-16 px-6 text-center">
-                                    <div class="max-w-xs mx-auto flex flex-col items-center gap-3">
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="text-muted" aria-hidden="true">
+                                <td colspan="6" style="padding: 3.5rem 1.5rem; text-align: center;">
+                                    <div style="max-width: 260px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 0.85rem;">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="color: var(--rule);" aria-hidden="true">
                                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                                             <line x1="9" y1="7" x2="15" y2="7"/>
                                             <line x1="9" y1="11" x2="13" y2="11"/>
                                         </svg>
-                                        <div class="font-display text-base font-semibold text-ink">Empty Archival Ledger</div>
-                                        <p class="font-body text-xs text-muted leading-relaxed">
-                                            No franchise assets archived yet. Encrypt and deposit your first document using the form.
+                                        <span style="font-family: 'Young Serif', Georgia, serif; font-size: 1rem; color: var(--paper-primary);">Vault masih kosong</span>
+                                        <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); line-height: 1.55;">
+                                            Belum ada aset yang tersimpan. Enkripsi dokumen pertama Anda menggunakan form di sebelah kiri.
                                         </p>
                                     </div>
                                 </td>
@@ -257,10 +263,10 @@
                 </table>
             </div>
 
-            <!-- Ledger Table Footer -->
-            <div class="p-3 sm:p-4 border-t border-rule font-mono text-[10px] text-muted flex items-center justify-between">
-                <span>RECORDS: <span id="row-count">{{ files|length if files else 0 }}</span> ITEMS</span>
-                <span>AUTHENTICATED LOCAL NODE</span>
+            <!-- Footer tabel -->
+            <div style="padding: 0.6rem 1rem; border-top: 1px solid var(--rule); font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); display: flex; justify-content: space-between; align-items: center;">
+                <span>Total: <span id="row-count">{{ files|length if files else 0 }}</span> rekaman</span>
+                <span>node terautentikasi</span>
             </div>
         </main>
 
@@ -270,12 +276,12 @@
 
 {% block extra_scripts %}
 <script>
-    // ── Dynamic Category Hints ──────────────────────────────────────────
+    // ── Hints kategori ──────────────────────────────────────────────────
     const hints = {
-        personal_data: 'Franchisee identification records, contact PII, legal contracts.',
-        id_scan:       'Photocopies of KTP, NPWP, business registration permits.',
-        office_doc:    'Confidential batter formula and operational standards.',
-        video:         'Masterclass kitchen technique and batter preparation videos.'
+        personal_data: 'Catatan identitas mitra, data kontak, perjanjian hukum.',
+        id_scan:       'Fotokopi KTP, NPWP, atau dokumen izin usaha.',
+        office_doc:    'Formula adonan rahasia dan standar operasional outlet.',
+        video:         'Video teknik dapur dan persiapan adonan masterclass.'
     };
     const fileTypeSelect = document.getElementById('file_type');
     const categoryHint = document.getElementById('category-hint');
@@ -286,7 +292,7 @@
         categoryHint.textContent = hints[fileTypeSelect.value] || '';
     }
 
-    // ── Drag & Drop Handling ────────────────────────────────────────────
+    // ── Drag & Drop ──────────────────────────────────────────────────
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file');
     const selectedFilename = document.getElementById('selected-filename');
@@ -316,19 +322,19 @@
         });
     }
 
-    // ── Form Submission Feedback ────────────────────────────────────────
+    // ── Form Submit Feedback ──────────────────────────────────────────
     const uploadForm = document.getElementById('upload-form');
     if (uploadForm) {
         uploadForm.addEventListener('submit', () => {
             const btn = document.getElementById('btn-upload');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Encrypting Payload...</span>';
+                btn.innerHTML = '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Mengenkripsi...</span>';
             }
         });
     }
 
-    // ── Client-side Ledger Filter ───────────────────────────────────────
+    // ── Filter ledger ──────────────────────────────────────────────────
     const searchInput = document.getElementById('vault-search');
     if (searchInput) {
         searchInput.addEventListener('input', function() {

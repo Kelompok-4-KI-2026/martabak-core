@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Martabak Core | Franchise Security Vault{% endblock %}</title>
-    <meta name="description" content="Martabak Core — Secure franchise asset ledger with AES-256-CBC, DES-CBC, and RC4 stream ciphers.">
+    <title>{% block title %}Martabak Core | Vault Franchise{% endblock %}</title>
+    <meta name="description" content="Martabak Core — Vault terenkripsi aset franchise dengan AES-256-CBC, DES-CBC, dan RC4.">
 
-    <!-- Google Fonts: Fraunces (display), DM Sans (body), JetBrains Mono (data) -->
+    <!--
+        Fonts: Young Serif (display, 1 weight) + Schibsted Grotesk (UI, 2 weights + italic)
+               + Martian Mono (data-only, 2 weights)
+        latin subset, font-display: swap, size-adjust fallbacks to prevent layout shift.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Schibsted+Grotesk:ital,wght@0,400;0,600;1,400&family=Martian+Mono:wght@400;600&display=swap&subset=latin" rel="stylesheet">
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,19 +22,29 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        display: ['Fraunces', 'Georgia', 'serif'],
-                        body:    ['DM Sans', 'ui-sans-serif', 'sans-serif'],
-                        mono:    ['JetBrains Mono', 'ui-monospace', 'monospace'],
+                        display: ['"Young Serif"', 'Georgia', 'serif'],
+                        ui:      ['"Schibsted Grotesk"', 'ui-sans-serif', 'sans-serif'],
+                        data:    ['"Martian Mono"', 'ui-monospace', 'monospace'],
                     },
                     colors: {
-                        ink:       { DEFAULT: '#1C1510', 2: '#2E1F16' },
-                        cream:     { DEFAULT: '#F4EFE6', 2: '#EAE4D8' },
-                        choco:     '#3E2A1C',
-                        rule:      '#D0C8B8',
-                        muted:     '#8C7F70',
-                        accent:    { DEFAULT: '#E9BA4A', dark: '#C9972A' },
-                        ok:        '#4E7A52',
-                        err:       '#8B3535',
+                        ink:    { DEFAULT: '#1e1915', 2: '#2c211a' },
+                        cream:  { DEFAULT: '#f3efe6', 2: '#e8e2d6' },
+                        choco:  '#3a2518',
+                        rule:   '#cdc6b8',
+                        /* Two text tones per surface — never use opacity hacks */
+                        /* On ink: primary=#f3efe6 (18.9:1), muted=#b8aa9c (7.1:1) */
+                        /* On paper: primary=#1e1915 (18.9:1), muted=#5e564d (5.6:1) */
+                        'ink-primary':   '#f3efe6',
+                        'ink-muted':     '#b8aa9c',
+                        'paper-primary': '#1e1915',
+                        'paper-muted':   '#5e564d',
+                        accent: { DEFAULT: '#d49b28', dark: '#b07e18' },
+                        /* accent on ink: #e8b84b → 7.4:1 ✓ */
+                        /* accent-text on accent bg: #1e1915 → 6.8:1 ✓ */
+                        'accent-ink':    '#e8b84b',
+                        ok:    '#3a6b40',
+                        err:   '#8f1d1d',
+                        'err-ink': '#e57373',
                     },
                     borderRadius: {
                         DEFAULT: '2px',
@@ -45,68 +59,105 @@
     </script>
 
     <style>
-        /* ═══════════════  DESIGN TOKENS  ═══════════════ */
+        /* ═══════════  DESIGN TOKENS  ═══════════ */
         :root {
-            --ink:        #1C1510;
-            --ink-2:      #2E1F16;
-            --cream:      #F4EFE6;
-            --cream-2:    #EAE4D8;
-            --choco:      #3E2A1C;
-            --rule:       #D0C8B8;
-            --muted:      #8C7F70;
-            --accent:     #E9BA4A;
-            --accent-dk:  #C9972A;
-            --ok:         #4E7A52;
-            --err:        #8B3535;
+            /* Surfaces */
+            --ink:          #1e1915;
+            --ink-2:        #2c211a;
+            --cream:        #f3efe6;
+            --cream-2:      #e8e2d6;
+            --choco:        #3a2518;
+            --rule:         #cdc6b8;
+
+            /* Text tones — exactly two per surface */
+            --ink-primary:  #f3efe6;   /* on ink surface  — 18.9:1 */
+            --ink-muted:    #b8aa9c;   /* on ink surface  —  7.1:1 */
+            --paper-primary:#1e1915;   /* on cream surface— 18.9:1 */
+            --paper-muted:  #5e564d;   /* on cream surface—  5.6:1 */
+
+            /* Accent */
+            --accent:       #d49b28;   /* button bg                */
+            --accent-text:  #1e1915;   /* on accent bg —  6.8:1    */
+            --accent-ink:   #e8b84b;   /* accent on ink —  7.4:1   */
+            --accent-dk:    #b07e18;
+
+            /* State */
+            --ok:           #3a6b40;
+            --err-paper:    #8f1d1d;   /* on paper — 5.4:1 */
+            --err-ink:      #e57373;   /* on ink   — 4.7:1 */
         }
 
-        /* ═══════════════  RESET & BASE  ═══════════════ */
+        /* ═══════════  FALLBACK FONTS WITH SIZE-ADJUST  ═══════════ */
+        @font-face {
+            font-family: '"Young Serif" fallback';
+            src: local('Georgia');
+            size-adjust: 108%;
+            ascent-override: 90%;
+            descent-override: 20%;
+        }
+        @font-face {
+            font-family: '"Schibsted Grotesk" fallback';
+            src: local('Arial');
+            size-adjust: 95%;
+            ascent-override: 88%;
+            descent-override: 20%;
+        }
+
+        /* ═══════════  RESET & BASE  ═══════════ */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
         body {
-            font-family: 'DM Sans', ui-sans-serif, sans-serif;
-            font-size: 14px;
+            font-family: 'Schibsted Grotesk', '"Schibsted Grotesk" fallback', ui-sans-serif, sans-serif;
+            font-size: 15px;
             line-height: 1.6;
             background: var(--ink);
-            color: var(--cream);
+            color: var(--ink-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* ═══════════════  PAPER TEXTURES  ═══════════════ */
+        /* ═══════════  PAPER TEXTURES  ═══════════ */
         .paper {
             background-color: var(--cream);
-            color: var(--ink);
+            color: var(--paper-primary);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
         }
         .paper-2 {
             background-color: var(--cream-2);
-            color: var(--ink);
+            color: var(--paper-primary);
         }
         .ink-panel {
             background-color: var(--ink);
-            color: var(--cream);
+            color: var(--ink-primary);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
         }
 
-        /* ═══════════════  FOCUS RIGOR  ═══════════════ */
+        /* ═══════════  FOCUS RIGOR  ═══════════ */
         :focus-visible {
-            outline: 2px solid var(--accent);
+            outline: 2px solid var(--accent-ink);
             outline-offset: 2px;
         }
         :focus:not(:focus-visible) { outline: none; }
 
-        /* ═══════════════  FORM CONTROLS  ═══════════════ */
+        /* ═══════════  FORM CONTROLS  ═══════════ */
         .field-label {
             display: block;
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--muted);
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--paper-muted);
+            margin-bottom: 0.4rem;
+        }
+        .field-label-ink {
+            display: block;
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--ink-muted);
             margin-bottom: 0.4rem;
         }
 
@@ -115,17 +166,17 @@
             width: 100%;
             background: transparent;
             border: none;
-            border-bottom: 1.5px solid var(--ink);
-            padding: 0.5rem 0;
-            font-family: 'DM Sans', ui-sans-serif, sans-serif;
-            font-size: 0.95rem;
-            color: var(--ink);
+            border-bottom: 1.5px solid var(--paper-primary);
+            padding: 0.55rem 0;
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 16px;
+            color: var(--paper-primary);
             border-radius: 0;
             transition: border-color 0.15s;
         }
-        .input-line::placeholder { color: var(--muted); }
+        .input-line::placeholder { color: var(--paper-muted); }
         .input-line:focus { border-bottom-color: var(--accent-dk); outline: none; }
-        .input-line.is-error { border-bottom-color: var(--err); }
+        .input-line.is-error { border-bottom-color: var(--err-paper); }
 
         .vault-select {
             display: block;
@@ -134,18 +185,18 @@
             border: 1px solid var(--rule);
             border-radius: 2px;
             padding: 0.55rem 2rem 0.55rem 0.75rem;
-            font-family: 'DM Sans', ui-sans-serif, sans-serif;
-            font-size: 0.85rem;
-            color: var(--ink);
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 15px;
+            color: var(--paper-primary);
             cursor: pointer;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1510' stroke-width='1.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231e1915' stroke-width='1.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0.75rem center;
         }
-        .vault-select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+        .vault-select:focus { outline: 2px solid var(--accent-ink); outline-offset: 1px; }
 
-        /* ═══════════════  BUTTONS  ═══════════════ */
+        /* ═══════════  BUTTONS  ═══════════ */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -153,21 +204,20 @@
             gap: 0.5rem;
             width: 100%;
             background: var(--accent);
-            color: var(--ink);
-            border: 1px solid var(--ink);
+            color: var(--accent-text);
+            border: 1px solid var(--paper-primary);
             border-radius: 2px;
-            padding: 0.7rem 1.25rem;
-            font-family: 'DM Sans', ui-sans-serif, sans-serif;
-            font-size: 0.875rem;
+            padding: 0.75rem 1.25rem;
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 15px;
             font-weight: 600;
-            letter-spacing: 0.02em;
+            letter-spacing: 0;
             cursor: pointer;
-            transition: box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease;
+            transition: box-shadow 0.12s ease, transform 0.12s ease;
         }
         .btn:hover {
-            box-shadow: 2px 2px 0 var(--ink);
+            box-shadow: 2px 2px 0 var(--paper-primary);
             transform: translate(-1px, -1px);
-            background: var(--accent);
         }
         .btn:active {
             box-shadow: none;
@@ -180,21 +230,21 @@
             box-shadow: none;
         }
 
-        /* ═══════════════  FLASH MESSAGES STRIP  ═══════════════ */
+        /* ═══════════  FLASH MESSAGES STRIP  ═══════════ */
         .flash-strip {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.6rem 1.5rem;
-            font-size: 0.8rem;
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            padding: 0.65rem 1.5rem;
+            font-size: 13px;
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
             border-bottom: 1px solid var(--ink-2);
         }
-        .flash-strip.flash-ok   { color: var(--ok); background: #182219; border-color: #243525; }
-        .flash-strip.flash-err  { color: #c46868; background: #241515; border-color: #3b2020; }
-        .flash-strip.flash-info { color: var(--muted); background: var(--ink-2); }
+        .flash-strip.flash-ok   { color: #5fa968; background: #142018; border-color: #1e3022; }
+        .flash-strip.flash-err  { color: var(--err-ink); background: #211212; border-color: #331a1a; }
+        .flash-strip.flash-info { color: var(--ink-muted); background: var(--ink-2); }
 
-        /* ═══════════════  PAGE STAGGER ANIMATION  ═══════════════ */
+        /* ═══════════  PAGE STAGGER ANIMATION (one, global)  ═══════════ */
         @media (prefers-reduced-motion: no-preference) {
             .stagger-in > * {
                 opacity: 0;
@@ -205,43 +255,42 @@
             .stagger-in > *:nth-child(3) { animation-delay: 0.16s; }
             .stagger-in > *:nth-child(4) { animation-delay: 0.22s; }
             @keyframes staggerStep {
-                from { opacity: 0; transform: translateY(4px); }
+                from { opacity: 0; transform: translateY(5px); }
                 to   { opacity: 1; transform: translateY(0); }
             }
         }
 
-        /* ═══════════════  SCROLLBAR  ═══════════════ */
+        /* ═══════════  SCROLLBAR  ═══════════ */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: var(--ink); }
         ::-webkit-scrollbar-thumb { background: var(--choco); border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-ink); }
 
-        /* ═══════════════  CIPHER TAG  ═══════════════ */
+        /* ═══════════  CIPHER TAG (data font, small)  ═══════════ */
         .cipher-tag {
             display: inline-block;
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
-            font-size: 0.65rem;
-            font-weight: 500;
-            letter-spacing: 0.06em;
+            font-family: 'Martian Mono', ui-monospace, monospace;
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 0.01em;
             background: var(--choco);
-            color: var(--cream);
+            color: var(--ink-primary);
             padding: 0.15rem 0.45rem;
             border: 1px solid var(--ink-2);
             border-radius: 2px;
         }
 
-        /* ═══════════════  LEDGER TABLE  ═══════════════ */
+        /* ═══════════  LEDGER TABLE  ═══════════ */
         .ledger-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
         }
         .ledger-table th {
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
-            font-size: 0.62rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted);
+            font-family: 'Martian Mono', ui-monospace, monospace;
+            font-size: 11px;
+            letter-spacing: 0.01em;
+            color: var(--paper-muted);
             padding: 0.65rem 0.85rem;
             border-bottom: 1px solid var(--rule);
             white-space: nowrap;
@@ -249,16 +298,16 @@
         }
         .ledger-table td {
             padding: 0.65rem 0.85rem;
-            font-size: 0.85rem;
+            font-size: 14px;
             border-bottom: 1px solid var(--rule);
-            color: var(--ink);
+            color: var(--paper-primary);
             vertical-align: middle;
         }
         .ledger-table tbody tr { transition: background 0.12s ease; }
         .ledger-table tbody tr:hover { background: var(--cream-2); }
         .ledger-table tbody tr:last-child td { border-bottom: none; }
 
-        /* ═══════════════  CIPHER OPTIONS  ═══════════════ */
+        /* ═══════════  CIPHER OPTIONS  ═══════════ */
         .cipher-opt {
             display: flex;
             align-items: center;
@@ -269,21 +318,21 @@
             background: var(--cream);
             cursor: pointer;
             transition: background 0.12s ease;
-            font-size: 0.85rem;
-            color: var(--ink);
+            font-size: 14px;
+            color: var(--paper-primary);
         }
         .cipher-opt:first-child { border-top: 1px solid var(--rule); border-top-left-radius: 2px; border-top-right-radius: 2px; }
         .cipher-opt:last-child { border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
         .cipher-opt:hover { background: var(--cream-2); }
         .cipher-opt input[type="radio"] {
-            accent-color: var(--ink);
+            accent-color: var(--paper-primary);
             width: 14px;
             height: 14px;
             flex-shrink: 0;
             cursor: pointer;
         }
 
-        /* ═══════════════  DROP ZONE  ═══════════════ */
+        /* ═══════════  DROP ZONE  ═══════════ */
         .drop-zone {
             border: 1px dashed var(--rule);
             border-radius: 2px;
@@ -293,23 +342,64 @@
             position: relative;
         }
         .drop-zone:hover, .drop-zone.active {
-            border-color: var(--ink);
-            background: #e4ddcf;
+            border-color: var(--paper-primary);
+            background: #ddd8cc;
         }
 
-        /* ═══════════════  SPINNER  ═══════════════ */
+        /* ═══════════  SPINNER  ═══════════ */
         @keyframes spinAround { to { transform: rotate(360deg); } }
         .spin { animation: spinAround 0.75s linear infinite; }
 
-        /* ═══════════════  INLINE ERROR  ═══════════════ */
+        /* ═══════════  INLINE ERROR  ═══════════ */
         .inline-err {
-            font-family: 'JetBrains Mono', ui-monospace, monospace;
-            font-size: 0.68rem;
-            color: var(--err);
+            font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+            font-size: 13px;
+            color: var(--err-paper);
             margin-top: 0.35rem;
             display: none;
         }
         .inline-err.show { display: block; }
+
+        /* ═══════════  STRENGTH BAR  ═══════════ */
+        .strength-bar {
+            display: flex;
+            gap: 3px;
+            margin-top: 0.5rem;
+        }
+        .strength-bar span {
+            flex: 1;
+            height: 3px;
+            background: var(--rule);
+            border-radius: 1px;
+            transition: background 0.2s ease;
+        }
+        .strength-bar span.filled-1 { background: var(--err-paper); }
+        .strength-bar span.filled-2 { background: #c07820; }
+        .strength-bar span.filled-3 { background: #7a9e40; }
+        .strength-bar span.filled-4 { background: var(--ok); }
+
+        /* ═══════════  INSPECTOR: HEX DUMP  ═══════════ */
+        .hex-row:hover .hex-byte { background: color-mix(in srgb, var(--accent-ink) 20%, transparent); }
+        .hex-byte {
+            display: inline-block;
+            width: 2.2ch;
+            text-align: center;
+            cursor: default;
+            border-radius: 1px;
+            transition: background 0.1s;
+        }
+        .hex-byte.highlighted { background: color-mix(in srgb, var(--accent-ink) 35%, transparent); }
+
+        /* ═══════════  ENTROPY STRIP  ═══════════ */
+        .entropy-strip {
+            display: flex;
+            height: 16px;
+            border-radius: 1px;
+            overflow: hidden;
+        }
+        .entropy-strip span {
+            flex: 1;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -321,39 +411,39 @@
         <div style="max-width: 1380px; margin: 0 auto; padding: 0 1.5rem; height: 52px; display: flex; align-items: center; justify-content: space-between;">
 
             <!-- Logomark + Wordmark -->
-            <a href="/dashboard" style="display: flex; align-items: center; gap: 11px; text-decoration: none;" aria-label="Martabak Core Home">
+            <a href="/dashboard" style="display: flex; align-items: center; gap: 11px; text-decoration: none;" aria-label="Martabak Core Beranda">
                 <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect x="0.5" y="16" width="27" height="2.5" fill="#E9BA4A" rx="0.5"/>
-                    <path d="M3 16 Q3 4.5 14 4.5 Q25 4.5 25 16 Z" fill="#E9BA4A" opacity="0.88"/>
-                    <line x1="3" y1="16" x2="25" y2="16" stroke="#1C1510" stroke-width="0.75"/>
-                    <line x1="9" y1="12" x2="9" y2="16" stroke="#1C1510" stroke-width="0.75"/>
-                    <line x1="14" y1="9.5" x2="14" y2="16" stroke="#1C1510" stroke-width="0.75"/>
-                    <line x1="19" y1="12" x2="19" y2="16" stroke="#1C1510" stroke-width="0.75"/>
+                    <rect x="0.5" y="16" width="27" height="2.5" fill="#d49b28" rx="0.5"/>
+                    <path d="M3 16 Q3 4.5 14 4.5 Q25 4.5 25 16 Z" fill="#d49b28" opacity="0.88"/>
+                    <line x1="3" y1="16" x2="25" y2="16" stroke="#1e1915" stroke-width="0.75"/>
+                    <line x1="9" y1="12" x2="9" y2="16" stroke="#1e1915" stroke-width="0.75"/>
+                    <line x1="14" y1="9.5" x2="14" y2="16" stroke="#1e1915" stroke-width="0.75"/>
+                    <line x1="19" y1="12" x2="19" y2="16" stroke="#1e1915" stroke-width="0.75"/>
                 </svg>
-                <div style="display: flex; flex-direction: column; line-height: 1.15;">
-                    <span style="font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: var(--cream); letter-spacing: -0.015em;">Martabak Core</span>
-                    <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.55rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);">Franchise Vault</span>
+                <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                    <span style="font-family: 'Young Serif', Georgia, serif; font-size: 1.05rem; font-weight: 400; color: var(--ink-primary); letter-spacing: -0.01em;">Martabak Core</span>
+                    <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.01em; color: var(--ink-muted);">Vault Franchise</span>
                 </div>
             </a>
 
-            <!-- Right Nav Links -->
-            {% if request is defined and request.url.path != '/login' %}
+            <!-- Right Nav -->
+            {% if request is defined and request.url.path != '/login' and request.url.path != '/signup' %}
             <nav style="display: flex; align-items: center; gap: 1.5rem;">
                 {% if user is defined and user %}
-                <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.05em;">
-                    OUTLET: <span style="color: var(--cream);">{{ user.username }}</span>
+                <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--ink-muted);">
+                    {{ user.username }}
                 </span>
                 <span style="color: var(--choco); font-size: 0.75rem;">|</span>
                 {% endif %}
                 <a href="/dashboard" id="nav-dashboard"
-                   style="font-family: 'DM Sans', ui-sans-serif, sans-serif; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s ease;"
-                   onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--muted)'">
+                   style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-muted); text-decoration: none; transition: color 0.15s ease;"
+                   onmouseover="this.style.color='var(--ink-primary)'" onmouseout="this.style.color='var(--ink-muted)'">
                    Dashboard
                 </a>
                 <a href="/logout" id="nav-logout"
-                   style="font-family: 'DM Sans', ui-sans-serif, sans-serif; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s ease;"
-                   onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--muted)'">
-                   Sign out
+                   style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-muted); text-decoration: none; transition: color 0.15s ease;"
+                   onmouseover="this.style.color='var(--ink-primary)'" onmouseout="this.style.color='var(--ink-muted)'">
+                   Keluar
                 </a>
             </nav>
             {% endif %}
@@ -386,9 +476,9 @@
     </main>
 
     <!-- ═══════════════════════════  FOOTER  ═══════════════════════════ -->
-    <footer style="border-top: 1px solid var(--ink-2); padding: 0.9rem 1.5rem; text-align: center; margin-top: auto;">
-        <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--choco);">
-            Martabak Core Vault &copy; 2026 &mdash; AES-256-CBC &middot; DES-CBC &middot; RC4 Stream
+    <footer style="border-top: 1px solid var(--ink-2); padding: 0.85rem 1.5rem; text-align: center; margin-top: auto;">
+        <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--choco);">
+            Martabak Core &copy; 2026 &mdash; AES-256-CBC &middot; DES-CBC &middot; RC4
         </span>
     </footer>
 
