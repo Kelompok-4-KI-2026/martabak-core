@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from config import KEYS_DIR, STORAGE_DIR
 from core.auth_security import get_current_user
 from core.cipher_engine import MartabakCipherEngine
+from core.inspector import inspect_vault_payload
 from core.key_manager import KeyManager
 from database import get_db
 from models.user import User
@@ -195,6 +196,46 @@ def download_decrypted_file(
             "X-File-Type": file_record.file_type,
         },
     )
+
+
+@router.get("/{file_id}/inspect")
+def inspect_file(
+    file_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Strict User Isolation check
+    file_record = (
+        db.query(VaultFile)
+        .filter(VaultFile.id == file_id, VaultFile.user_id == current_user.id)
+        .first()
+    )
+
+    if not file_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File not found or access denied.",
+        )
+
+    if not os.path.exists(file_record.encrypted_filepath):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Encrypted storage file is missing.",
+        )
+
+    with open(file_record.encrypted_filepath, "rb") as f:
+        ciphertext = f.read()
+
+    try:
+        key = KeyManager.load_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to retrieve encryption key: {str(e)}",
+        )
+
+    report = inspect_vault_payload(file_record, ciphertext, key)
+    return report
 
 
 @router.delete("/files/{file_id}")

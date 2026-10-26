@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}Inspeksi Kriptografis: {{ file.original_filename }} | Martabak Core{% endblock %}
+
+{% block content %}
+<div class="max-w-[1380px] w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col gap-8 stagger-in">
+
+    <!-- ═══  TOP NAVIGATION / BREADCRUMB  ═══ -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--ink-2); padding-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="/dashboard" id="back-to-dashboard"
+               style="display: inline-flex; align-items: center; gap: 0.35rem; font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-muted); text-decoration: none; transition: color 0.15s;"
+               onmouseover="this.style.color='var(--ink-primary)'" onmouseout="this.style.color='var(--ink-muted)'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                <span>Kembali ke Ledger</span>
+            </a>
+            <span style="color: var(--choco);">/</span>
+            <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; color: var(--ink-primary); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ file.original_filename }}
+            </span>
+        </div>
+
+        <a href="/api/v1/vault/download/{{ file.id }}"
+           id="btn-inspect-download"
+           style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: var(--accent-text); border: 1px solid var(--paper-primary); padding: 0.5rem 1rem; border-radius: 2px; font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; transition: box-shadow 0.15s, transform 0.15s;"
+           onmouseover="this.style.boxShadow='2px 2px 0 var(--ink-primary)'; this.style.transform='translate(-1px,-1px)'"
+           onmouseout="this.style.boxShadow='none'; this.style.transform='none'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Dekripsi &amp; Unduh File</span>
+        </a>
+    </div>
+
+    <!-- ═══  HERO HEADER: ASYMMETRIC OVERVIEW  ═══ -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Title & Core Meta (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            <div>
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.05em; color: var(--ink-muted); text-transform: uppercase;">
+                    Audit Payload &middot; ID #{{ file.id }}
+                </div>
+                <h1 style="font-family: 'Young Serif', Georgia, serif; font-size: clamp(2rem, 3.5vw, 2.75rem); line-height: 1.1; letter-spacing: -0.015em; color: var(--ink-primary); margin-top: 0.35rem;">
+                    Inspeksi Kriptografis Ciphertext
+                </h1>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 15px; color: var(--ink-muted); margin-top: 0.5rem; line-height: 1.6;">
+                    Analisis distribusi entropi biner, struktur blok cipher, dan demonstrasi efek longsoran (<em style="color: var(--ink-primary);">avalanche effect</em>) dari payload tersimpan.
+                </p>
+            </div>
+
+            <!-- Metadata table in dark panel -->
+            <div class="ink-panel border border-ink-2 p-5 rounded-sm">
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 0.75rem;">
+                    Parameter Enkripsi Terverifikasi
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px;">
+                    <div>
+                        <div style="color: var(--ink-muted); font-size: 10px;">CIPHER</div>
+                        <div style="color: var(--ink-primary); font-weight: 600; font-size: 14px;">{{ report.cipher_used }}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--ink-muted); font-size: 10px;">MODE</div>
+                        <div style="color: var(--ink-primary); font-weight: 600; font-size: 14px;">{{ report.cipher_mode }}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--ink-muted); font-size: 10px;">UKURAN RAW</div>
+                        <div style="color: var(--ink-primary);">{{ (report.original_size / 1024)|round(2) if report.original_size else 0 }} KB</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--ink-muted); font-size: 10px;">CIPHERTEXT</div>
+                        <div style="color: var(--ink-primary);">{{ (report.ciphertext_size / 1024)|round(2) }} KB</div>
+                    </div>
+                </div>
+
+                {% if report.iv_hex %}
+                <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--ink-2); font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px;">
+                    <span style="color: var(--ink-muted);">INITIALIZATION VECTOR (IV):</span>
+                    <span style="color: var(--accent-ink); word-break: break-all; margin-left: 0.5rem;">{{ report.iv_hex }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Shannon Entropy Gauge Card (5 cols) -->
+        <div class="lg:col-span-5 paper border border-rule p-6 flex flex-col justify-between gap-5">
+            <div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.2rem; color: var(--paper-primary);">
+                        Entropi Shannon
+                    </h2>
+                    <span class="cipher-tag" style="background: var(--choco); color: var(--ink-primary);">
+                        {{ report.entropy.rating }}
+                    </span>
+                </div>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); margin-top: 0.35rem;">
+                    Derajat keacakan biner ($H$) dari payload terenkripsi. Nilai maksimum teoritis adalah 8.00 bit/byte.
+                </p>
+            </div>
+
+            <!-- Big Metric Display -->
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; margin: 0.5rem 0;">
+                <span style="font-family: 'Young Serif', Georgia, serif; font-size: 3.25rem; line-height: 1; color: var(--paper-primary);">
+                    {{ report.entropy.value }}
+                </span>
+                <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 14px; color: var(--paper-muted);">
+                    / 8.0000 bit/byte
+                </span>
+            </div>
+
+            <!-- Visual Progress Bar -->
+            <div>
+                <div style="width: 100%; height: 8px; background: var(--rule); border-radius: 2px; overflow: hidden;">
+                    <div style="width: {{ report.entropy.percentage }}%; height: 100%; background: var(--ok); transition: width 0.3s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 10px; color: var(--paper-muted); margin-top: 0.35rem;">
+                    <span>0.0 (Pola Terstruktur)</span>
+                    <span>4.0 (Teks Biasa)</span>
+                    <span style="color: var(--ok); font-weight: 600;">8.0 (Ideal Acak)</span>
+                </div>
+            </div>
+
+            <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); line-height: 1.5; border-top: 1px solid var(--rule); padding-top: 0.75rem;">
+                {{ report.entropy.description }}
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══  SECTION: LIVE AVALANCHE EFFECT (EFEK LONGSORAN)  ═══ -->
+    <section class="paper border border-rule p-6 sm:p-8 flex flex-col gap-6">
+        <div style="border-bottom: 1px solid var(--rule); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.35rem; color: var(--paper-primary);">
+                    Demonstrasi Efek Longsoran (Avalanche Effect)
+                </h2>
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 14px; color: var(--paper-muted); margin-top: 0.25rem;">
+                    Pengujian difusi kriptografis: membalik tepat 1 bit pada plaintext ($P \oplus 1\text{-bit}$) dan mengukur perubahan bit pada ciphertext ($C$).
+                </p>
+            </div>
+            <span class="cipher-tag" style="background: var(--paper-primary); color: var(--cream);">
+                {{ report.avalanche.rating }}
+            </span>
+        </div>
+
+        <!-- Metric comparison cards -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+
+            <!-- Diffusion Metric Result (4 cols) -->
+            <div class="md:col-span-4 bg-cream-2 border border-rule p-6 rounded-sm text-center flex flex-col items-center justify-center gap-2">
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); text-transform: uppercase;">
+                    Perubahan Bit Ciphertext
+                </div>
+                <div style="font-family: 'Young Serif', Georgia, serif; font-size: 3rem; line-height: 1; color: var(--accent-dk);">
+                    {{ report.avalanche.bit_diff_pct }}%
+                </div>
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; color: var(--paper-primary);">
+                    {{ report.avalanche.bit_diff_count }} dari {{ report.avalanche.total_bits }} bit berubah
+                </div>
+                <div style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 12px; color: var(--paper-muted); margin-top: 0.35rem;">
+                    Standar ideal block cipher: ~50%
+                </div>
+            </div>
+
+            <!-- Side-by-side Payload Bit Comparison (8 cols) -->
+            <div class="md:col-span-8 flex flex-col gap-4 font-mono text-xs">
+
+                <!-- Plaintext Sample Comparison -->
+                <div style="background: var(--cream); border: 1px solid var(--rule); padding: 0.85rem; border-radius: 2px;">
+                    <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); margin-bottom: 0.4rem;">
+                        1. INPUT SAMPEL (Beda 1 Bit di Byte Pertama):
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.35rem; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px;">
+                        <div><span style="color: var(--paper-muted);">P1:</span> <span style="color: var(--paper-primary);">{{ report.avalanche.p1_hex }}</span></div>
+                        <div><span style="color: var(--paper-muted);">P2:</span> <span style="color: var(--err-paper); font-weight: 600;">{{ report.avalanche.p2_hex }}</span> <span style="font-size: 10px; color: var(--err-paper);">(1 bit toggle)</span></div>
+                    </div>
+                </div>
+
+                <!-- Ciphertext Result Comparison -->
+                <div style="background: var(--cream); border: 1px solid var(--rule); padding: 0.85rem; border-radius: 2px;">
+                    <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); margin-bottom: 0.4rem;">
+                        2. OUTPUT CIPHERTEXT (Hasil Enkripsi dengan Kunci Sama):
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.35rem; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; word-break: break-all;">
+                        <div><span style="color: var(--paper-muted);">C1:</span> <span style="color: var(--paper-primary);">{{ report.avalanche.c1_hex }}</span></div>
+                        <div><span style="color: var(--paper-muted);">C2:</span> <span style="color: var(--accent-dk); font-weight: 600;">{{ report.avalanche.c2_hex }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Pedagogical Note -->
+                <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); line-height: 1.55;">
+                    <strong style="color: var(--paper-primary);">Kesimpulan Analisis:</strong> {{ report.avalanche.analysis }}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══  SECTION: BLOCK MAP & STRUCTURE  ═══ -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Block Architecture (5 cols) -->
+        <div class="lg:col-span-5 paper border border-rule p-6 flex flex-col gap-4">
+            <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.2rem; color: var(--paper-primary);">
+                Struktur Blok Sandi
+            </h2>
+            <p style="font-family: 'Schibsted Grotesk', ui-sans-serif, sans-serif; font-size: 13px; color: var(--paper-muted); line-height: 1.5;">
+                Bagaimana cipher membagi dan memproses bit-bit ciphertext dalam penyimpanan.
+            </p>
+
+            <table style="width: 100%; border-collapse: collapse; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; margin-top: 0.5rem;">
+                <tr style="border-bottom: 1px solid var(--rule);">
+                    <td style="padding: 0.5rem 0; color: var(--paper-muted);">Mode Operasi:</td>
+                    <td style="padding: 0.5rem 0; color: var(--paper-primary); font-weight: 600; text-align: right;">{{ report.block_map.mode }}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--rule);">
+                    <td style="padding: 0.5rem 0; color: var(--paper-muted);">Ukuran Blok:</td>
+                    <td style="padding: 0.5rem 0; color: var(--paper-primary); font-weight: 600; text-align: right;">{{ report.block_map.block_size_bytes }} Byte ({{ report.block_map.block_size_bits }} bit)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--rule);">
+                    <td style="padding: 0.5rem 0; color: var(--paper-muted);">Jumlah Blok Cipher:</td>
+                    <td style="padding: 0.5rem 0; color: var(--paper-primary); font-weight: 600; text-align: right;">{{ report.block_map.block_count }} blok</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.5rem 0; color: var(--paper-muted);">Total Payload Enkripsi:</td>
+                    <td style="padding: 0.5rem 0; color: var(--paper-primary); font-weight: 600; text-align: right;">{{ report.block_map.ciphertext_total_bytes }} Byte</td>
+                </tr>
+            </table>
+
+            <!-- Diagram representasi blok mini -->
+            <div style="margin-top: 0.75rem; padding: 0.75rem; background: var(--cream-2); border: 1px solid var(--rule); border-radius: 2px;">
+                <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 10px; color: var(--paper-muted); margin-bottom: 0.5rem;">
+                    REPRESENTASI SEGMENTASI:
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                    {% set max_blocks = 16 if report.block_map.block_count > 16 else report.block_map.block_count %}
+                    {% for i in range(max_blocks) %}
+                    <div style="padding: 4px 6px; background: var(--cream); border: 1px solid var(--rule); font-family: 'Martian Mono', ui-monospace, monospace; font-size: 10px; color: var(--paper-primary); border-radius: 1px;">
+                        B#{{ i + 1 }}
+                    </div>
+                    {% endfor %}
+                    {% if report.block_map.block_count > 16 %}
+                    <div style="padding: 4px 6px; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 10px; color: var(--paper-muted);">
+                        + {{ report.block_map.block_count - 16 }} blok lainnya...
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Hex Dump View (7 cols) -->
+        <div class="lg:col-span-7 paper border border-rule p-6 flex flex-col gap-4">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2 style="font-family: 'Young Serif', Georgia, serif; font-size: 1.2rem; color: var(--paper-primary);">
+                        Hex Dump Ciphertext
+                    </h2>
+                    <span style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted);">
+                        Pratinjau {{ report.hex_preview_bytes }} byte pertama &middot; 16 byte per baris
+                    </span>
+                </div>
+                <span class="cipher-tag" style="background: var(--choco); color: var(--ink-primary);">
+                    BINARY DUMP
+                </span>
+            </div>
+
+            <!-- Hex Table Container -->
+            <div style="background: var(--ink); border: 1px solid var(--ink-2); padding: 1rem; border-radius: 2px; overflow-x: auto;">
+                <table style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 12px; line-height: 1.7; border-collapse: collapse; color: var(--ink-primary); width: 100%;">
+                    <thead>
+                        <tr style="color: var(--ink-muted); border-bottom: 1px solid var(--ink-2); font-size: 11px;">
+                            <th style="text-align: left; padding-bottom: 0.5rem; width: 85px;">OFFSET</th>
+                            <th style="text-align: left; padding-bottom: 0.5rem;">00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</th>
+                            <th style="text-align: right; padding-bottom: 0.5rem; width: 120px;">ASCII</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.hex_preview %}
+                        <tr class="hex-row">
+                            <!-- Offset -->
+                            <td style="color: var(--ink-muted); font-weight: 500;">{{ row.offset }}</td>
+
+                            <!-- 16 Hex bytes formatted with spacing -->
+                            <td style="letter-spacing: 0.05em;">
+                                {% for b in row.hex_bytes %}
+                                    <span class="hex-byte" style="color: var(--accent-ink);">{{ b }}</span>
+                                    {% if loop.index == 8 %}&nbsp;{% endif %}
+                                {% endfor %}
+                            </td>
+
+                            <!-- ASCII -->
+                            <td style="text-align: right; color: var(--ink-primary); font-family: 'Martian Mono', ui-monospace, monospace; letter-spacing: 0.08em;">
+                                {{ row.ascii }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="font-family: 'Martian Mono', ui-monospace, monospace; font-size: 11px; color: var(--paper-muted); display: flex; justify-content: space-between;">
+                <span>FORMAT: IEEE 802 / POSIX HEX DUMP</span>
+                <span>TOTAL: {{ report.ciphertext_size }} BYTES</span>
+            </div>
+        </div>
+
+    </section>
+
+</div>
+{% endblock %}

@@ -114,6 +114,48 @@ def signup_page(request: Request, db: Session = Depends(get_db)):
     )
 
 
+@app.get("/vault/{file_id}/inspect", response_class=HTMLResponse)
+def inspect_page(file_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_optional_user(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    file_record = (
+        db.query(VaultFile)
+        .filter(VaultFile.id == file_id, VaultFile.user_id == user.id)
+        .first()
+    )
+    if not file_record:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    if not os.path.exists(file_record.encrypted_filepath):
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    with open(file_record.encrypted_filepath, "rb") as f:
+        ciphertext = f.read()
+
+    try:
+        from pathlib import Path
+        from config import KEYS_DIR
+        from core.key_manager import KeyManager
+        key = KeyManager.load_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+    except Exception:
+        return RedirectResponse(url="/dashboard", status_code=303)
+
+    from core.inspector import inspect_vault_payload
+    report = inspect_vault_payload(file_record, ciphertext, key)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="inspect.html",
+        context={
+            "user": user,
+            "report": report,
+            "file": file_record,
+        },
+    )
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "app": "Martabak Core Vault"}

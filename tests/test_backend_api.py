@@ -179,12 +179,14 @@ def test_signup_page_and_form_flow():
     assert res_mismatch.status_code == 303
     assert "error=" in res_mismatch.headers["location"]
 
-    # Test POST /signup successful
+    # Test POST /signup successful (with unique username/email for idempotent test runs)
+    import uuid
+    uniq = uuid.uuid4().hex[:8]
     res_success = client.post(
         "/signup",
         data={
-            "username": "outlet_sukses",
-            "email": "sukses@martabak.id",
+            "username": f"outlet_{uniq}",
+            "email": f"outlet_{uniq}@martabak.id",
             "password": "PasswordSukses123!",
             "confirm_password": "PasswordSukses123!",
             "full_name": "Pak Budi",
@@ -195,3 +197,58 @@ def test_signup_page_and_form_flow():
     assert res_success.status_code == 303
     assert res_success.headers["location"] == "/"
     assert "session_token" in res_success.cookies
+
+
+def test_ciphertext_inspector_api_and_page():
+    # 1. Login user
+    login_res = client.post(
+        "/api/v1/auth/login",
+        data={"username": "user_a", "password": "PasswordA123"}
+    )
+    token = login_res.json()["access_token"]
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. Upload file encrypted with AES
+    payload_content = b"SECRET_MARTABAK_RECIPE_AUTHENTIC_RECIPE_SALT_EGGS_FLOUR"
+    res_upload = client.post(
+        "/api/v1/vault/upload",
+        headers=auth_headers,
+        data={"file_type": "office_doc", "cipher_choice": "AES"},
+        files={"file": ("resep_rahasia.txt", io.BytesIO(payload_content), "text/plain")}
+    )
+    assert res_upload.status_code == 200
+    file_id = res_upload.json()["file_id"]
+
+    # 3. Test API GET /api/v1/vault/{file_id}/inspect
+    res_inspect = client.get(f"/api/v1/vault/{file_id}/inspect", headers=auth_headers)
+    assert res_inspect.status_code == 200
+    data = res_inspect.json()
+    assert data["file_id"] == file_id
+    assert data["cipher_used"] == "AES"
+    assert "entropy" in data
+    assert data["entropy"]["value"] > 4.0  # high entropy for ciphertext
+    assert "hex_preview" in data
+    assert len(data["hex_preview"]) > 0
+    assert "avalanche" in data
+    assert "bit_diff_pct" in data["avalanche"]
+    assert "block_map" in data
+
+    # 4. Test User Isolation on inspector: user_b should get 404
+    token_b = client.post(
+        "/api/v1/auth/login",
+        data={"username": "user_b", "password": "PasswordB123"}
+    ).json()["access_token"]
+    res_b_inspect = client.get(
+        f"/api/v1/vault/{file_id}/inspect",
+        headers={"Authorization": f"Bearer {token_b}"}
+    )
+    assert res_b_inspect.status_code == 404
+
+    # 5. Test HTML Page GET /vault/{file_id}/inspect
+    # Set session cookie
+    client.cookies.set("session_token", token)
+    res_page = client.get(f"/vault/{file_id}/inspect")
+    assert res_page.status_code == 200
+    assert "Inspeksi Kriptografis Ciphertext" in res_page.text
+    assert "Entropi Shannon" in res_page.text
+    assert "Demonstrasi Efek Longsoran" in res_page.text
