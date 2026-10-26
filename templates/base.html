@@ -1,103 +1,343 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Martabak Core | Franchise Security Vault{% endblock %}</title>
-    <meta name="description" content="Martabak Core – Secure franchise document vault. Encrypt, store, and manage sensitive franchise data with AES, DES, or RC4 ciphers.">
+    <title>{% block title %}Martabak Core | Franchise Vault{% endblock %}</title>
+    <meta name="description" content="Martabak Core — franchise document encryption vault. AES-256-CBC, DES-CBC, RC4.">
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Fraunces (display) · DM Sans (body) · JetBrains Mono (data) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                        display: ['Fraunces', 'Georgia', 'serif'],
+                        body:    ['DM Sans', 'ui-sans-serif'],
+                        mono:    ['JetBrains Mono', 'ui-monospace'],
                     },
                     colors: {
-                        brand: {
-                            DEFAULT: '#f59e0b',
-                            light:   '#fbbf24',
-                            dark:    '#d97706',
-                        }
+                        ink:       { DEFAULT: '#1C1510', 2: '#2E1F16' },
+                        cream:     { DEFAULT: '#F4EFE6', 2: '#EAE4D8' },
+                        choco:     '#3E2A1C',
+                        rule:      '#D0C8B8',
+                        muted:     '#8C7F70',
+                        accent:    { DEFAULT: '#E9BA4A', dark: '#C9972A' },
+                        ok:        '#4E7A52',
+                        err:       '#8B3535',
                     },
-                    boxShadow: {
-                        'glow-amber': '0 0 24px 0 rgba(245,158,11,0.15)',
-                    },
-                    animation: {
-                        'fade-in':    'fadeIn 0.35s ease both',
-                        'slide-down': 'slideDown 0.3s ease both',
-                    },
-                    keyframes: {
-                        fadeIn:    { from: { opacity: '0', transform: 'translateY(6px)' },  to: { opacity: '1', transform: 'translateY(0)' } },
-                        slideDown: { from: { opacity: '0', transform: 'translateY(-8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-                    }
                 }
             }
         }
     </script>
 
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', ui-sans-serif, system-ui; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #020617; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
-        select:focus, input:focus { outline: none; box-shadow: 0 0 0 2px rgba(245,158,11,0.45); }
-        input[type="file"]::file-selector-button {
-            background: #f59e0b; color: #020617; border: none;
-            padding: 0.4rem 1rem; border-radius: 0.5rem;
-            font-size: 0.8rem; font-weight: 600; cursor: pointer;
-            transition: background 0.2s; margin-right: 0.75rem;
+        /* ═══════════════  DESIGN TOKENS  ═══════════════ */
+        :root {
+            --ink:        #1C1510;
+            --ink-2:      #2E1F16;
+            --cream:      #F4EFE6;
+            --cream-2:    #EAE4D8;
+            --choco:      #3E2A1C;
+            --rule:       #D0C8B8;
+            --muted:      #8C7F70;
+            --accent:     #E9BA4A;
+            --accent-dk:  #C9972A;
+            --ok:         #4E7A52;
+            --err:        #8B3535;
         }
-        input[type="file"]::file-selector-button:hover { background: #fbbf24; }
-        .nav-link { transition: color 0.2s; }
-        .nav-link:hover { color: #fbbf24; }
+
+        /* ═══════════════  RESET  ═══════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+        body {
+            font-family: 'DM Sans', ui-sans-serif;
+            font-size: 14px;
+            line-height: 1.65;
+            background: var(--ink);
+            color: var(--cream);
+            min-height: 100dvh;
+        }
+
+        /* ═══════════════  PAPER TEXTURE  ═══════════════ */
+        /* Applied to cream surfaces. Subtle SVG noise — no image download. */
+        .paper {
+            background-color: var(--cream);
+            color: var(--ink);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+        }
+        .paper-2 {
+            background-color: var(--cream-2);
+            color: var(--ink);
+        }
+
+        /* ═══════════════  FOCUS  ═══════════════ */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        :focus:not(:focus-visible) { outline: none; }
+
+        /* ═══════════════  FORM ELEMENTS  ═══════════════ */
+
+        /* Underline input (used on login) */
+        .input-line {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1.5px solid var(--ink);
+            padding: 0.45rem 0;
+            font-family: 'DM Sans', ui-sans-serif;
+            font-size: 0.9rem;
+            color: var(--ink);
+            transition: border-color 0.15s;
+        }
+        .input-line::placeholder { color: var(--muted); }
+        .input-line:focus { border-bottom-color: var(--accent); outline: none; }
+        .input-line.is-error { border-bottom-color: var(--err); }
+
+        /* Hard-bordered select (used on dashboard) */
+        .vault-select {
+            display: block;
+            width: 100%;
+            background: var(--cream-2);
+            border: 1px solid var(--rule);
+            padding: 0.5rem 0.75rem;
+            font-family: 'DM Sans', ui-sans-serif;
+            font-size: 0.875rem;
+            color: var(--ink);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231C1510' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.65rem center;
+        }
+        .vault-select:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+
+        /* ═══════════════  BUTTONS  ═══════════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            width: 100%;
+            background: var(--accent);
+            color: var(--ink);
+            border: 1px solid var(--ink);
+            padding: 0.65rem 1.25rem;
+            font-family: 'DM Sans', ui-sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.015em;
+            cursor: pointer;
+            transition: box-shadow 0.12s, transform 0.12s;
+        }
+        .btn:hover {
+            box-shadow: 2px 2px 0 var(--ink);
+            transform: translate(-1px, -1px);
+        }
+        .btn:active { box-shadow: none; transform: none; }
+        .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ═══════════════  FIELD LABEL (mono small-caps) ═══════════════ */
+        .field-label {
+            display: block;
+            font-family: 'JetBrains Mono', ui-monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        /* ═══════════════  FLASH STRIP  ═══════════════ */
+        .flash-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.8rem;
+            border-top: 1px solid var(--rule);
+            border-bottom: 1px solid var(--rule);
+        }
+        .flash-strip.flash-ok    { color: var(--ok);   background: color-mix(in srgb, var(--ok)  5%, var(--ink)); border-color: color-mix(in srgb, var(--ok)  25%, var(--ink)); }
+        .flash-strip.flash-err   { color: var(--err);  background: color-mix(in srgb, var(--err) 5%, var(--ink)); border-color: color-mix(in srgb, var(--err) 25%, var(--ink)); }
+        .flash-strip.flash-info  { color: var(--muted); background: var(--ink-2); }
+
+        /* ═══════════════  PAGE-LOAD STAGGER (one animation only) ═══════════════ */
+        @media (prefers-reduced-motion: no-preference) {
+            .stagger > * {
+                opacity: 0;
+                animation: staggerUp 0.28s ease forwards;
+            }
+            .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+            .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+            .stagger > *:nth-child(3) { animation-delay: 0.16s; }
+            .stagger > *:nth-child(4) { animation-delay: 0.22s; }
+            .stagger > *:nth-child(5) { animation-delay: 0.28s; }
+            @keyframes staggerUp {
+                from { opacity: 0; transform: translateY(6px); }
+                to   { opacity: 1; transform: none; }
+            }
+        }
+
+        /* ═══════════════  SCROLLBAR  ═══════════════ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--ink); }
+        ::-webkit-scrollbar-thumb { background: var(--choco); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* ═══════════════  CIPHER TAG (mono pill, single style) ═══════════════ */
+        .cipher-tag {
+            font-family: 'JetBrains Mono', ui-monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.07em;
+            background: var(--choco);
+            color: var(--cream);
+            padding: 0.12rem 0.45rem;
+            border: 1px solid var(--ink-2);
+        }
+
+        /* ═══════════════  LEDGER TABLE  ═══════════════ */
+        .ledger th {
+            font-family: 'JetBrains Mono', ui-monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 0.75rem 0.6rem;
+            border-bottom: 1px solid var(--rule);
+            white-space: nowrap;
+        }
+        .ledger td {
+            padding: 0.55rem 0.75rem;
+            font-size: 0.82rem;
+            border-bottom: 1px solid var(--rule);
+            color: var(--ink);
+        }
+        .ledger tbody tr:last-child td { border-bottom: none; }
+        .ledger tbody tr { transition: background 0.1s; }
+        .ledger tbody tr:hover { background: var(--cream-2); }
+
+        /* ═══════════════  DROP ZONE  ═══════════════ */
+        .drop-zone {
+            border: 1px dashed var(--rule);
+            background: var(--cream-2);
+            cursor: pointer;
+            transition: border-color 0.15s;
+            position: relative;
+        }
+        .drop-zone:hover, .drop-zone.active { border-color: var(--accent); }
+
+        /* ═══════════════  CIPHER RADIO OPTION  ═══════════════ */
+        .cipher-opt {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--rule);
+            border-top: none;
+            background: var(--cream);
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 0.85rem;
+            color: var(--ink);
+        }
+        .cipher-opt:first-child { border-top: 1px solid var(--rule); }
+        .cipher-opt:hover { background: var(--cream-2); }
+        .cipher-opt input[type="radio"] { accent-color: var(--accent); width: 13px; height: 13px; flex-shrink: 0; }
+        .cipher-opt-name { font-weight: 600; font-size: 0.82rem; }
+        .cipher-opt-sub  { font-family: 'JetBrains Mono', ui-monospace; font-size: 0.58rem; letter-spacing: 0.04em; color: var(--muted); }
+        .cipher-mode { font-family: 'JetBrains Mono', ui-monospace; font-size: 0.58rem; letter-spacing: 0.06em; background: var(--cream-2); border: 1px solid var(--rule); padding: 0.1rem 0.35rem; color: var(--muted); margin-left: auto; flex-shrink: 0; }
+
+        /* ═══════════════  SPINNER  ═══════════════ */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.75s linear infinite; }
+
+        /* ═══════════════  INLINE ERROR  ═══════════════ */
+        .inline-err {
+            font-family: 'JetBrains Mono', ui-monospace;
+            font-size: 0.62rem;
+            color: var(--err);
+            margin-top: 0.3rem;
+            display: none;
+        }
+        .inline-err.show { display: block; }
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+<body>
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-6 py-3.5 flex justify-between items-center">
-        <a href="/dashboard" class="flex items-center space-x-3 group">
-            <span class="text-2xl select-none" aria-hidden="true">🍫🥞</span>
-            <div class="flex flex-col leading-tight">
-                <span class="font-bold text-base tracking-wide text-amber-400 group-hover:text-amber-300 transition-colors">Martabak Core</span>
-                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Franchise Security Vault</span>
-            </div>
-        </a>
-        <div class="flex items-center space-x-5 text-sm">
+    <!-- ═══════════════════════════  HEADER  ═══════════════════════════ -->
+    <header style="background: var(--ink); border-bottom: 1px solid var(--ink-2);">
+        <div style="max-width: 1320px; margin: 0 auto; padding: 0 1.5rem; height: 50px; display: flex; align-items: center; justify-content: space-between;">
+
+            <!-- Logomark + Wordmark -->
+            <a href="/dashboard" style="display: flex; align-items: center; gap: 10px; text-decoration: none;" aria-label="Martabak Core home">
+                <!--
+                    SVG Logomark: a martabak folded in half — semicircle dome
+                    sitting on a flat griddle bar, with three score marks.
+                -->
+                <svg width="30" height="20" viewBox="0 0 30 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <!-- griddle bar -->
+                    <rect x="1" y="15.5" width="28" height="3" fill="#E9BA4A"/>
+                    <!-- folded dome -->
+                    <path d="M4 15.5 Q4 5 15 5 Q26 5 26 15.5 Z" fill="#E9BA4A" opacity="0.8"/>
+                    <!-- fold crease line at base -->
+                    <line x1="4" y1="15.5" x2="26" y2="15.5" stroke="#1C1510" stroke-width="0.8"/>
+                    <!-- score marks -->
+                    <line x1="10" y1="12"  x2="10" y2="15.5" stroke="#1C1510" stroke-width="0.75"/>
+                    <line x1="15" y1="10"  x2="15" y2="15.5" stroke="#1C1510" stroke-width="0.75"/>
+                    <line x1="20" y1="12"  x2="20" y2="15.5" stroke="#1C1510" stroke-width="0.75"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                    <span style="font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 600; color: var(--cream); letter-spacing: -0.015em;">Martabak Core</span>
+                    <span style="font-family: 'JetBrains Mono', ui-monospace; font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);">Franchise Vault</span>
+                </div>
+            </a>
+
+            <!-- Right nav (hidden on login) -->
             {% if request is defined and request.url.path != '/login' %}
-            <a href="/dashboard" id="nav-dashboard" class="nav-link text-slate-400">Dashboard</a>
-            <div class="h-4 w-px bg-slate-700"></div>
-            <a href="/logout" id="nav-logout" class="nav-link text-slate-400">Sign Out</a>
+            <nav style="display: flex; align-items: center; gap: 1.5rem;">
+                <a href="/dashboard" id="nav-dashboard"
+                   style="font-family: 'DM Sans', ui-sans-serif; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s;"
+                   onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--muted)'">
+                   Dashboard
+                </a>
+                <a href="/logout" id="nav-logout"
+                   style="font-family: 'DM Sans', ui-sans-serif; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.15s;"
+                   onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--muted)'">
+                   Sign out
+                </a>
+            </nav>
             {% endif %}
-            <div class="flex items-center space-x-1.5 bg-slate-800/60 border border-slate-700/60 rounded-full px-3 py-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="text-xs text-slate-400 font-medium">Vault Online</span>
-            </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- FLASH MESSAGES -->
+    <!-- ═══════════════════════════  FLASH MESSAGES  ═══════════════════════════ -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div id="flash-container" class="max-w-6xl mx-auto px-6 pt-5 space-y-2 animate-slide-down">
+        <div id="flash-container">
             {% for category, message in messages %}
-            <div class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm
-                {% if category == 'error' %}bg-red-950/60 border-red-800/60 text-red-300
-                {% elif category == 'success' %}bg-emerald-950/60 border-emerald-800/60 text-emerald-300
-                {% else %}bg-amber-950/40 border-amber-800/60 text-amber-300{% endif %}">
-                <span class="mt-px">{% if category == 'error' %}⚠{% elif category == 'success' %}✓{% else %}ℹ{% endif %}</span>
+            <div class="flash-strip {% if category == 'error' %}flash-err{% elif category == 'success' %}flash-ok{% else %}flash-info{% endif %}">
+                <!-- Contextual SVG icon, stroke-width 1.5, 14×14 -->
+                {% if category == 'error' %}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+                {% elif category == 'success' %}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                {% else %}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg>
+                {% endif %}
                 <span>{{ message }}</span>
             </div>
             {% endfor %}
@@ -105,15 +345,16 @@
         {% endif %}
     {% endwith %}
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-6xl mx-auto px-6 py-8 animate-fade-in">
+    <!-- ═══════════════════════════  MAIN  ═══════════════════════════ -->
+    <main>
         {% block content %}{% endblock %}
     </main>
 
-    <!-- FOOTER -->
-    <footer class="border-t border-slate-800/60 mt-16 py-5 px-6 text-center text-xs text-slate-600">
-        Martabak Core &copy; 2026 &mdash; Franchise Cryptographic Security System &mdash;
-        <span class="text-amber-700">AES &middot; DES &middot; RC4</span>
+    <!-- ═══════════════════════════  FOOTER  ═══════════════════════════ -->
+    <footer style="border-top: 1px solid var(--ink-2); padding: 0.9rem 1.5rem; text-align: center;">
+        <span style="font-family: 'JetBrains Mono', ui-monospace; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--choco);">
+            Martabak Core &copy; 2026 &mdash; AES-256-CBC &middot; DES-CBC &middot; RC4
+        </span>
     </footer>
 
     {% block extra_scripts %}{% endblock %}
