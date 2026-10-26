@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Martabak Core | Franchise Security Vault{% endblock %}</title>
+    <meta name="description" content="Martabak Core – Secure franchise document vault. Encrypt, store, and manage sensitive franchise data with AES, DES, or RC4 ciphers.">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#f59e0b',
+                            light:   '#fbbf24',
+                            dark:    '#d97706',
+                        }
+                    },
+                    boxShadow: {
+                        'glow-amber': '0 0 24px 0 rgba(245,158,11,0.15)',
+                    },
+                    animation: {
+                        'fade-in':    'fadeIn 0.35s ease both',
+                        'slide-down': 'slideDown 0.3s ease both',
+                    },
+                    keyframes: {
+                        fadeIn:    { from: { opacity: '0', transform: 'translateY(6px)' },  to: { opacity: '1', transform: 'translateY(0)' } },
+                        slideDown: { from: { opacity: '0', transform: 'translateY(-8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', ui-sans-serif, system-ui; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        select:focus, input:focus { outline: none; box-shadow: 0 0 0 2px rgba(245,158,11,0.45); }
+        input[type="file"]::file-selector-button {
+            background: #f59e0b; color: #020617; border: none;
+            padding: 0.4rem 1rem; border-radius: 0.5rem;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s; margin-right: 0.75rem;
+        }
+        input[type="file"]::file-selector-button:hover { background: #fbbf24; }
+        .nav-link { transition: color 0.2s; }
+        .nav-link:hover { color: #fbbf24; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-6 py-3.5 flex justify-between items-center">
+        <a href="/dashboard" class="flex items-center space-x-3 group">
+            <span class="text-2xl select-none" aria-hidden="true">🍫🥞</span>
+            <div class="flex flex-col leading-tight">
+                <span class="font-bold text-base tracking-wide text-amber-400 group-hover:text-amber-300 transition-colors">Martabak Core</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Franchise Security Vault</span>
+            </div>
+        </a>
+        <div class="flex items-center space-x-5 text-sm">
+            {% if request is defined and request.url.path != '/login' %}
+            <a href="/dashboard" id="nav-dashboard" class="nav-link text-slate-400">Dashboard</a>
+            <div class="h-4 w-px bg-slate-700"></div>
+            <a href="/logout" id="nav-logout" class="nav-link text-slate-400">Sign Out</a>
+            {% endif %}
+            <div class="flex items-center space-x-1.5 bg-slate-800/60 border border-slate-700/60 rounded-full px-3 py-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs text-slate-400 font-medium">Vault Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div id="flash-container" class="max-w-6xl mx-auto px-6 pt-5 space-y-2 animate-slide-down">
+            {% for category, message in messages %}
+            <div class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm
+                {% if category == 'error' %}bg-red-950/60 border-red-800/60 text-red-300
+                {% elif category == 'success' %}bg-emerald-950/60 border-emerald-800/60 text-emerald-300
+                {% else %}bg-amber-950/40 border-amber-800/60 text-amber-300{% endif %}">
+                <span class="mt-px">{% if category == 'error' %}⚠{% elif category == 'success' %}✓{% else %}ℹ{% endif %}</span>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl mx-auto px-6 py-8 animate-fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800/60 mt-16 py-5 px-6 text-center text-xs text-slate-600">
+        Martabak Core &copy; 2026 &mdash; Franchise Cryptographic Security System &mdash;
+        <span class="text-amber-700">AES &middot; DES &middot; RC4</span>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

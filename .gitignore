@@ -1,6 +1,10 @@
 __pycache__/
 venv/
+.venv/
 .env
 encrypted_storage/*
 !encrypted_storage/.gitkeep
+keys/
+!keys/.gitkeep
 .DS_Store
+*.db
