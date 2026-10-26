@@ -1,0 +1,215 @@
+{
+    "environment": {
+        "python_version": "3.14.3",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+        "iterations": 5,
+        "timer": "time.perf_counter"
+    },
+    "results": {
+        "Small PII Data (1 KB)": {
+            "AES": {
+                "median_encryption_ms": 0.038,
+                "median_decryption_ms": 0.036,
+                "encryption_throughput_mib_s": 25.63,
+                "decryption_throughput_mib_s": 27.05,
+                "peak_memory_kib": 5.97,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    0.618,
+                    0.038,
+                    0.045,
+                    0.034,
+                    0.027
+                ],
+                "raw_decryption_runs_ms": [
+                    0.056,
+                    0.093,
+                    0.036,
+                    0.03,
+                    0.028
+                ]
+            },
+            "DES": {
+                "median_encryption_ms": 0.12,
+                "median_decryption_ms": 0.121,
+                "encryption_throughput_mib_s": 8.13,
+                "decryption_throughput_mib_s": 8.06,
+                "peak_memory_kib": 6.4,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    0.19,
+                    0.127,
+                    0.12,
+                    0.117,
+                    0.118
+                ],
+                "raw_decryption_runs_ms": [
+                    0.144,
+                    0.126,
+                    0.121,
+                    0.117,
+                    0.12
+                ]
+            },
+            "RC4": {
+                "median_encryption_ms": 0.033,
+                "median_decryption_ms": 0.029,
+                "encryption_throughput_mib_s": 29.96,
+                "decryption_throughput_mib_s": 34.27,
+                "peak_memory_kib": 3.77,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    0.091,
+                    0.041,
+                    0.033,
+                    0.03,
+                    0.03
+                ],
+                "raw_decryption_runs_ms": [
+                    0.043,
+                    0.032,
+                    0.029,
+                    0.028,
+                    0.028
+                ]
+            }
+        },
+        "Medium Office Doc (500 KB)": {
+            "AES": {
+                "median_encryption_ms": 1.085,
+                "median_decryption_ms": 0.955,
+                "encryption_throughput_mib_s": 449.86,
+                "decryption_throughput_mib_s": 511.08,
+                "peak_memory_kib": 2002.15,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    1.335,
+                    1.2,
+                    1.085,
+                    1.013,
+                    0.967
+                ],
+                "raw_decryption_runs_ms": [
+                    1.283,
+                    1.196,
+                    0.942,
+                    0.924,
+                    0.955
+                ]
+            },
+            "DES": {
+                "median_encryption_ms": 21.906,
+                "median_decryption_ms": 20.633,
+                "encryption_throughput_mib_s": 22.29,
+                "decryption_throughput_mib_s": 23.66,
+                "peak_memory_kib": 2002.6,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    21.335,
+                    21.299,
+                    21.906,
+                    22.112,
+                    22.936
+                ],
+                "raw_decryption_runs_ms": [
+                    20.021,
+                    20.013,
+                    20.709,
+                    20.633,
+                    20.915
+                ]
+            },
+            "RC4": {
+                "median_encryption_ms": 1.592,
+                "median_decryption_ms": 1.541,
+                "encryption_throughput_mib_s": 306.67,
+                "decryption_throughput_mib_s": 316.92,
+                "peak_memory_kib": 1500.97,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    1.55,
+                    1.62,
+                    1.592,
+                    1.645,
+                    1.559
+                ],
+                "raw_decryption_runs_ms": [
+                    1.59,
+                    1.556,
+                    1.524,
+                    1.534,
+                    1.541
+                ]
+            }
+        },
+        "Heavy SOP Video (5 MB)": {
+            "AES": {
+                "median_encryption_ms": 9.158,
+                "median_decryption_ms": 8.466,
+                "encryption_throughput_mib_s": 545.96,
+                "decryption_throughput_mib_s": 590.6,
+                "peak_memory_kib": 20481.75,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    9.896,
+                    9.822,
+                    9.158,
+                    9.002,
+                    8.738
+                ],
+                "raw_decryption_runs_ms": [
+                    8.852,
+                    8.643,
+                    8.466,
+                    8.435,
+                    8.27
+                ]
+            },
+            "DES": {
+                "median_encryption_ms": 223.2,
+                "median_decryption_ms": 211.154,
+                "encryption_throughput_mib_s": 22.4,
+                "decryption_throughput_mib_s": 23.68,
+                "peak_memory_kib": 20481.54,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    228.568,
+                    223.2,
+                    226.717,
+                    218.738,
+                    221.768
+                ],
+                "raw_decryption_runs_ms": [
+                    208.662,
+                    209.889,
+                    212.931,
+                    212.687,
+                    211.154
+                ]
+            },
+            "RC4": {
+                "median_encryption_ms": 15.105,
+                "median_decryption_ms": 15.425,
+                "encryption_throughput_mib_s": 331.01,
+                "decryption_throughput_mib_s": 324.16,
+                "peak_memory_kib": 15360.88,
+                "integrity_ok": true,
+                "raw_encryption_runs_ms": [
+                    15.105,
+                    16.883,
+                    15.092,
+                    15.574,
+                    14.939
+                ],
+                "raw_decryption_runs_ms": [
+                    15.999,
+                    15.425,
+                    15.505,
+                    15.109,
+                    14.897
+                ]
+            }
+        }
+    }
+}
