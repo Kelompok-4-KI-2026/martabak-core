@@ -5,12 +5,15 @@ Secure key persistence layer for Martabak Core.
 
 Design
 ------
-* Each encryption key is stored as a **separate binary file** under a
-  ``keys/`` directory that sits outside the source tree.
-* File permissions are locked to **0o600** (owner read/write only)
-  immediately after creation.
+* Each encryption key is stored as a **separate binary object** named
+  ``<identifier>.key``.
 * Key material never enters the database — the database stores only the
   UUID identifier, which the backend uses to call load_key() at decrypt time.
+* Two backends:
+    - Explicit ``keys_dir``  -> local folder (tests / dev). Permissions are
+      locked to **0o600** (owner read/write only) immediately after creation.
+    - No ``keys_dir`` + Supabase Storage configured -> the ``keys`` bucket.
+      This is the production path (Vercel, read-only filesystem).
 
 Usage (by the backend / Person 2)
 ----------------------------------
@@ -28,8 +31,10 @@ import os
 import stat
 from pathlib import Path
 
+from core.storage_client import BUCKET_KEYS, get_storage, sanitize_object_name
+
 # Default storage directory (relative to the project root).
-# The backend can override this by passing a custom `keys_dir` argument.
+# Used only for the local backend; pass a custom `keys_dir` to override.
 _DEFAULT_KEYS_DIR = Path(__file__).resolve().parent.parent / "keys"
 
 
@@ -37,13 +42,19 @@ class KeyManager:
     """
     Utility class for persisting and retrieving encryption keys.
 
-    All methods accept an optional *keys_dir* parameter so the storage
-    location can be overridden in tests or different deployment environments.
+    With an explicit *keys_dir*, keys are written to local files (used in
+    tests). Without it, keys go through the configured storage backend —
+    the Supabase ``keys`` bucket in production, a local folder otherwise.
     """
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _use_storage(keys_dir: Path | None) -> bool:
+        """True when this call should go through the remote storage backend."""
+        return keys_dir is None and get_storage().is_remote
 
     @staticmethod
     def _resolve_dir(keys_dir: Path | None) -> Path:
@@ -82,13 +93,14 @@ class KeyManager:
             A unique string (e.g., a UUID) that the backend stores in the DB
             and uses later to retrieve the key.
         keys_dir : Path | None
-            Override the storage directory (defaults to ``keys/`` in the
-            project root).
+            Override the storage location (defaults to the storage backend:
+            Supabase ``keys`` bucket in production, ``keys/`` otherwise).
 
         Returns
         -------
         Path
-            Absolute path of the written key file.
+            Path (local backend) or object name (storage backend) of the
+            written key.
 
         Raises
         ------
@@ -100,6 +112,12 @@ class KeyManager:
                 f"Invalid key identifier: '{identifier}'. "
                 "Must be a plain filename with no path separators."
             )
+
+        if KeyManager._use_storage(keys_dir):
+            object_name = get_storage().upload(
+                BUCKET_KEYS, f"{identifier}.key", key
+            )
+            return Path(object_name)
 
         directory = KeyManager._resolve_dir(keys_dir)
         path = KeyManager._key_path(identifier, directory)
@@ -123,7 +141,7 @@ class KeyManager:
         identifier : str
             The same identifier that was passed to :meth:`save_key`.
         keys_dir : Path | None
-            Override the storage directory.
+            Override the storage location.
 
         Returns
         -------
@@ -135,6 +153,9 @@ class KeyManager:
         FileNotFoundError
             If no key file exists for *identifier*.
         """
+        if KeyManager._use_storage(keys_dir):
+            return get_storage().download(BUCKET_KEYS, f"{identifier}.key")
+
         directory = KeyManager._resolve_dir(keys_dir)
         path = KeyManager._key_path(identifier, directory)
 
@@ -168,6 +189,14 @@ class KeyManager:
         FileNotFoundError
             If the key file does not exist.
         """
+        if KeyManager._use_storage(keys_dir):
+            if not get_storage().exists(BUCKET_KEYS, f"{identifier}.key"):
+                raise FileNotFoundError(
+                    f"Cannot delete: no key found for identifier '{identifier}'."
+                )
+            get_storage().delete(BUCKET_KEYS, f"{identifier}.key")
+            return
+
         directory = KeyManager._resolve_dir(keys_dir)
         path = KeyManager._key_path(identifier, directory)
 
@@ -193,8 +222,11 @@ class KeyManager:
         identifier : str
             The identifier to check.
         keys_dir : Path | None
-            Override the storage directory.
+            Override the storage location.
         """
+        if KeyManager._use_storage(keys_dir):
+            return get_storage().exists(BUCKET_KEYS, f"{identifier}.key")
+
         directory = KeyManager._resolve_dir(keys_dir)
         path = KeyManager._key_path(identifier, directory)
         return path.exists()

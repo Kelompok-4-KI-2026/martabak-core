@@ -1,4 +1,3 @@
-import os
 import uuid
 from pathlib import Path
 from typing import List, Optional
@@ -17,11 +16,11 @@ from fastapi import (
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 
-from config import KEYS_DIR, STORAGE_DIR
 from core.auth_security import get_current_user
 from core.cipher_engine import MartabakCipherEngine
 from core.inspector import inspect_vault_payload
 from core.key_manager import KeyManager
+from core.storage_client import BUCKET_ENCRYPTED, get_storage
 from database import get_db
 from models.user import User
 from models.vault_file import VaultFile
@@ -71,24 +70,22 @@ async def upload_vault_file(
             detail=f"Encryption failed: {str(e)}",
         )
 
-    # Persist secret key safely via KeyManager
+    # Persist secret key safely via KeyManager (Supabase `keys` bucket in prod)
     key_id = str(uuid.uuid4())
-    KeyManager.save_key(encrypted_result["key"], key_id, keys_dir=Path(KEYS_DIR))
+    KeyManager.save_key(encrypted_result["key"], key_id)
 
-    # Persist encrypted payload (.enc) to vault storage
+    # Persist encrypted payload (.enc) to vault storage (Supabase in prod)
     enc_filename = f"{uuid.uuid4()}.enc"
-    enc_path = os.path.join(STORAGE_DIR, enc_filename)
-    with open(enc_path, "wb") as f:
-        f.write(encrypted_result["ciphertext"])
+    get_storage().upload(BUCKET_ENCRYPTED, enc_filename, encrypted_result["ciphertext"])
 
     iv_hex = encrypted_result["iv"].hex() if encrypted_result.get("iv") else None
 
-    # Persist metadata to database
+    # Persist metadata to database (encrypted_filepath = object name only)
     db_file = VaultFile(
         user_id=current_user.id,
         file_type=file_type,
         original_filename=file.filename or "unknown_file",
-        encrypted_filepath=enc_path,
+        encrypted_filepath=enc_filename,
         cipher_used=cipher_clean,
         cipher_mode=encrypted_result["mode"],
         key_id=key_id,
@@ -151,18 +148,20 @@ def download_decrypted_file(
             detail="File not found or access denied.",
         )
 
-    if not os.path.exists(file_record.encrypted_filepath):
+    # Retrieve ciphertext from vault storage (Supabase in prod)
+    try:
+        ciphertext = get_storage().download(
+            BUCKET_ENCRYPTED, file_record.encrypted_filepath
+        )
+    except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Encrypted storage file is missing.",
         )
 
-    with open(file_record.encrypted_filepath, "rb") as f:
-        ciphertext = f.read()
-
     try:
         # Load key from KeyManager
-        key = KeyManager.load_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+        key = KeyManager.load_key(file_record.key_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -217,17 +216,19 @@ def inspect_file(
             detail="File not found or access denied.",
         )
 
-    if not os.path.exists(file_record.encrypted_filepath):
+    # Retrieve ciphertext from vault storage (Supabase in prod)
+    try:
+        ciphertext = get_storage().download(
+            BUCKET_ENCRYPTED, file_record.encrypted_filepath
+        )
+    except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Encrypted storage file is missing.",
         )
 
-    with open(file_record.encrypted_filepath, "rb") as f:
-        ciphertext = f.read()
-
     try:
-        key = KeyManager.load_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+        key = KeyManager.load_key(file_record.key_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -256,16 +257,15 @@ def delete_vault_file(
             detail="File not found or access denied.",
         )
 
-    # Clean up disk file
-    if os.path.exists(file_record.encrypted_filepath):
-        try:
-            os.remove(file_record.encrypted_filepath)
-        except OSError:
-            pass
-
-    # Clean up key file
+    # Clean up storage object
     try:
-        KeyManager.delete_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+        get_storage().delete(BUCKET_ENCRYPTED, file_record.encrypted_filepath)
+    except Exception:
+        pass
+
+    # Clean up key
+    try:
+        KeyManager.delete_key(file_record.key_id)
     except Exception:
         pass
 

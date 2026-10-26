@@ -1,5 +1,5 @@
-import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Request
@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from core.auth_security import decode_signed_token, get_current_user
+from core.storage_client import BUCKET_ENCRYPTED, get_storage
 from database import Base, engine, get_db, init_db
 from models.user import User
 from models.vault_file import VaultFile
@@ -28,7 +29,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "templates"))
 
 
 def get_flashed_messages(with_categories: bool = False):
@@ -128,17 +129,17 @@ def inspect_page(file_id: int, request: Request, db: Session = Depends(get_db)):
     if not file_record:
         return RedirectResponse(url="/dashboard", status_code=303)
 
-    if not os.path.exists(file_record.encrypted_filepath):
+    # Retrieve ciphertext from vault storage (Supabase in prod)
+    try:
+        ciphertext = get_storage().download(
+            BUCKET_ENCRYPTED, file_record.encrypted_filepath
+        )
+    except FileNotFoundError:
         return RedirectResponse(url="/dashboard", status_code=303)
 
-    with open(file_record.encrypted_filepath, "rb") as f:
-        ciphertext = f.read()
-
     try:
-        from pathlib import Path
-        from config import KEYS_DIR
         from core.key_manager import KeyManager
-        key = KeyManager.load_key(file_record.key_id, keys_dir=Path(KEYS_DIR))
+        key = KeyManager.load_key(file_record.key_id)
     except Exception:
         return RedirectResponse(url="/dashboard", status_code=303)
 

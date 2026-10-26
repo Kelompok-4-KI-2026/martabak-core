@@ -21,5 +21,24 @@ if not DATABASE_URL:
 STORAGE_DIR = os.getenv("STORAGE_DIR", str(BASE_DIR / "encrypted_storage"))
 KEYS_DIR = os.getenv("KEYS_DIR", str(BASE_DIR / "keys"))
 
-os.makedirs(STORAGE_DIR, exist_ok=True)
-os.makedirs(KEYS_DIR, exist_ok=True)
+# ---------------------------------------------------------------------------
+# Supabase Storage (production / Vercel)
+# ---------------------------------------------------------------------------
+# When both are set, encrypted payloads and keys live in Supabase Storage
+# buckets instead of local folders. On Vercel the filesystem is read-only,
+# so local folders must never be created or written to.
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv(
+    "SUPABASE_SERVICE_ROLE_KEY", os.getenv("SUPABASE_KEY", "")
+)
+
+USE_SUPABASE_STORAGE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+
+# Bucket names (must exist in the Supabase project)
+BUCKET_ENCRYPTED = os.getenv("SUPABASE_BUCKET_ENCRYPTED", "encrypted-storage")
+BUCKET_KEYS = os.getenv("SUPABASE_BUCKET_KEYS", "keys")
+
+if not USE_SUPABASE_STORAGE:
+    # Local development / test fallback only.
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+    os.makedirs(KEYS_DIR, exist_ok=True)

@@ -1,0 +1,22 @@
+# Never ship secrets or key material to Vercel.
+.env
+.env.*
+.venv
+venv
+
+# Vault data lives in Supabase Storage buckets, not in the deployment bundle.
+encrypted_storage/
+keys/
+backups/
+martabak.db
+
+# Not needed at runtime.
+tests/
+.pytest_cache/
+__pycache__/
+docs/
+bukti chat ai/
+Dockerfile
+docker-compose.yml
+scripts/
+benchmarks/
